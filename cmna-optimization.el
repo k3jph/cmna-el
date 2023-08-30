@@ -19,26 +19,35 @@
 ;;; Code:
 
 (defun bisection-method (func a b &optional tolerance max-iterations)
-  "Find a root of a continuous function F within the interval [A, B] using the
-   bisection method.
+  "Find a root of the continuous function FUNC within the interval [A, B] using
+  the bisection method.
 
-   F is the function whose root is to be determined.  A and B are endpoints of
-   the interval. F(A) and F(B) must have opposite signs; otherwise, the function
-   will signal an error.  TOLERANCE is the stopping criterion. The method stops
-   when the width of the interval [A, B] becomes less than TOLERANCE.
-   MAX-ITERATIONS is the maximum number of iterations allowed to achieve
-   convergence.
+The function estimates the root of a given function FUNC, bounded by the
+interval [A, B], to within a specified TOLERANCE.  The algorithm will terminate
+either when the estimated error falls below TOLERANCE or when MAX-ITERATIONS is
+reached.
 
-   Returns the approximate root as a floating-point number.
+Arguments:
+  FUNC           : The function whose root is to be estimated. It should accept
+                   a single numerical argument.
+  A, B           : The end-points of the interval within which to search for a
+                   root. FUNC(A) and FUNC(B) must have opposite signs.
+  TOLERANCE      : Optional. A positive number representing the accuracy to
+                   which the root should be estimated. Defaults to 1.0e-6.
+  MAX-ITERATIONS : Optional. A positive integer representing the maximum number
+                   of iterations the method can perform. Defaults to 1e2.
 
-   Signals an error if:
-    - F(A) and F(B) have the same sign, as a root is not guaranteed to exist
-      within [A, B].
-    - MAX-ITERATIONS is exceeded without finding a root within TOLERANCE.
+Returns:
+  A floating-point number representing the estimated root within the given
+  TOLERANCE.
 
-   Example usage:
+Errors:
+  Signals a \=cmna-domain-error\= if FUNC(A) and FUNC(B) have the same sign, as
+  this violates the assumption of the bisection method.
 
-      (bisection-method (lambda (x) (- (* x x) 4)) 0 3)"
+Example usage:
+  ; Find a root of x^2 - 4 between -3 and 3
+  (bisection-method (lambda (x) (- (* x x) 4)) -3 3)"
   (unless tolerance (setq tolerance 1.0e-6))
   (unless max-iterations (setq max-iterations 1e2))
   (let ((fa (funcall func a))
