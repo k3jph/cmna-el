@@ -18,6 +18,8 @@
 ;;
 ;;; Code:
 
+(require 'cmna-utilities)
+
 (defun bisection-method (func a b &optional tolerance max-iterations)
   "Find a root of the continuous function FUNC within the interval [A, B] using
   the bisection method.
@@ -55,7 +57,7 @@ Example usage:
         (iteration 0))
     (unless (> 0 (* fa fb))
       (signal 'cmna-domain-error "Incorrect initial interval [a, b]. Ensure f(a) < 0 and f(b) > 0."))
-    (while (and (< max-iterations)
+    (while (and (< iteration max-iterations)
                 (> (abs (- b a)) tolerance))
       (setq iteration (1+ iteration))
       (let* ((c (/ (+ a b) 2.0))
@@ -64,6 +66,55 @@ Example usage:
             (setq a c fa fc)
           (setq b c fb fc))))
     (/ (+ a b) 2.0)))
+
+(defun newton-method (func func-prime guess &optional tolerance max-iterations)
+  "Find an approximate root of the function FUNC using Newton's method,
+   starting from an initial GUESS.
+
+This function iteratively refines the estimate for the root of FUNC using its
+derivative FUNC-PRIME. The algorithm starts with an initial GUESS and iterates
+until either the difference between successive guesses is within TOLERANCE, or
+until MAX-ITERATIONS are reached.
+
+Arguments:
+
+  FUNC           : A function whose root is to be found. Must accept a single
+                   numerical argument.
+  FUNC-PRIME     : The derivative of FUNC. Must also accept a single numerical
+                   argument.
+  GUESS          : Initial guess for the root.
+  TOLERANCE      : Optional. A positive number representing the desired
+                   accuracy. Defaults to 1e-6.
+  MAX-ITERATIONS : Optional. A positive integer indicating the maximum number of
+                   iterations. Defaults to 1e2.
+
+Returns:
+
+  A floating-point number representing the estimated root within the given
+  TOLERANCE.
+
+Errors:
+  Signals \=cmna-maximum-iterations-exceeded\= if the method did not converge
+  within MAX-ITERATIONS.
+
+Example usage:
+  ; Finds a root of x^2 - 4, starting from 2
+  (newton-method (lambda (x) (- (* x x) 4)) (lambda (x) (* 2 x)) 2)"
+  (unless tolerance (setq tolerance 1e-6))
+  (unless max-iterations (setq max-iterations 1e2))
+  (let ((last-guess (+ guess (* 10 tolerance)))
+        (iteration 0))
+    (while (and (< iteration max-iterations)
+                (not (float-equal? guess last-guess (/ tolerance 10))))
+      (let* ((y (funcall func guess))
+             (y-derivative (float (funcall func-prime guess))))
+        (setq last-guess guess
+              guess (- guess (/ y y-derivative))
+              iteration (1+ iteration))))
+    (if (>= iteration max-iterations)
+        (signal 'cmna-maximum-iterations-exceeded
+                (format "Newton's method did not converge after %d iterations" max-iterations))
+      last-guess)))
 
 (provide 'cmna-optimization)
 

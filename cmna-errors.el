@@ -21,6 +21,7 @@
 (define-error 'cmna-error "CMNA error")
 (define-error 'cmna-domain-error "CMNA domain error" 'cmna-error)
 (define-error 'cmna-range-error "CMNA range error" 'cmna-error)
+(define-error 'cmna-maximum-iterations-exceeded "CMNA maximum iterations exceeded" 'cmna-error)
 (define-error 'cmna-underflow-error "CMNA underflow error" 'cmna-error)
 (define-error 'cmna-overflow-error "CMNA overflow error" 'cmna-error)
 
