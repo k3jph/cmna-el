@@ -52,20 +52,20 @@ Example usage:
   (bisection-method (lambda (x) (- (* x x) 4)) -3 3)"
   (unless tolerance (setq tolerance 1.0e-6))
   (unless max-iterations (setq max-iterations 1e2))
-  (let ((fa (funcall func a))
-        (fb (funcall func b))
-        (iteration 0))
-    (unless (> 0 (* fa fb))
-      (signal 'cmna-domain-error "Incorrect initial interval [a, b]. Ensure f(a) < 0 and f(b) > 0."))
-    (while (and (< iteration max-iterations)
-                (> (abs (- b a)) tolerance))
-      (setq iteration (1+ iteration))
-      (let* ((c (/ (+ a b) 2.0))
-             (fc (funcall func c)))
+  (when (>= 0 max-iterations)
+    (signal 'cmna-maximum-iterations-exceeded
+            (format "Bisection method did not converge after %d iterations" max-iterations)))
+  (let* ((fa (funcall func a))
+         (fb (funcall func b)))
+    (unless (>= 0 (* fa fb))
+      (signal 'cmna-domain-error "Invalid initial interval [a, b]. Ensure f(a) < 0 and f(b) > 0."))
+    (let* ((c (/ (+ a b) 2.0))
+           (fc (funcall func c)))
+      (if (float-equal? a b tolerance)
+          (/ (+ a b) 2.0)
         (if (< 0 (* fa fc))
-            (setq a c fa fc)
-          (setq b c fb fc))))
-    (/ (+ a b) 2.0)))
+            (bisection-method func a c tolerance (1- max-iterations)))
+        (bisection-method func c b tolerance (1- max-iterations))))))
 
 (defun newton-method (func func-prime guess &optional tolerance max-iterations)
   "Find an approximate root of the function FUNC using Newton's method,
@@ -111,10 +111,10 @@ Example usage:
         (setq last-guess guess
               guess (- guess (/ y y-derivative))
               iteration (1+ iteration))))
-    (if (>= iteration max-iterations)
+    (when (>= iteration max-iterations)
         (signal 'cmna-maximum-iterations-exceeded
-                (format "Newton's method did not converge after %d iterations" max-iterations))
-      last-guess)))
+                (format "Newton's method did not converge after %d iterations" max-iterations)))
+    (identity last-guess)))
 
 (provide 'cmna-optimization)
 
