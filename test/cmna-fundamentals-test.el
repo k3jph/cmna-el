@@ -1,4 +1,4 @@
-;;; cmna-fundamentals-test.el --- Tests for cmna-el -*- lexical-binding: t; -*-
+;;; cmna-fundamentals-test.el --- Tests for CMNA Fundamentals -*- lexical-binding: t; -*-
 
 (require 'cmna-utilities)
 
@@ -65,6 +65,5 @@
 (ert-deftest arithmetic-mean/incorrect-argument ()
   "Test arithmetic mean with non-number elements."
   (should-error (arithmetic-mean '(1 2 "3"))))
-
 
 ;;; cmna-fundamentals-test.el ends here

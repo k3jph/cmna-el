@@ -1,4 +1,4 @@
-;;; cmna-rootfinding-test.el --- Tests for cmna-el -*- lexical-binding: t; -*-
+;;; cmna-rootfinding-test.el --- Tests for CMNA Root Finding -*- lexical-binding: t; -*-
 
 ;; Tests for the bisection method
 (ert-deftest bisection-method/x2minus4 ()

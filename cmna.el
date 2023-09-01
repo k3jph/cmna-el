@@ -4,8 +4,6 @@
 ;;
 ;; Author: James P. Howard, II <jh@jameshoward.us>
 ;; Maintainer: James P. Howard, II <jh@jameshoward.us>
-;; Created: August 14, 2023
-;; Modified: August 14, 2023
 ;; Keywords: tools
 ;; Homepage: https://github.com/k3jph/cmna-el
 ;; Package-Requires: ((emacs "24.3"))

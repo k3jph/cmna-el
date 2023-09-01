@@ -1,4 +1,4 @@
-;;; cmna-utilities-test.el --- Tests for cmna-el -*- lexical-binding: t; -*-
+;;; cmna-utilities-test.el --- Tests for CMNA Utilities -*- lexical-binding: t; -*-
 
 (ert-deftest float-equal?/equal ()
   "Test cases for equal floats"
