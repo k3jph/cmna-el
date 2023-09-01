@@ -23,6 +23,8 @@
 (require 'cmna-errors)
 (require 'cmna-fundamentals)
 (require 'cmna-utilities)
+
+(require 'cmna-integration)
 (require 'cmna-rootfinding)
 
 (provide 'cmna)
