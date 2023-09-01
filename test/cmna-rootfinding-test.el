@@ -60,4 +60,32 @@
   (defun test-func-derivative (x) (* 2 x))
   (should-error (newton-method 'test-func 'test-func-derivative 0) :type 'cmna-maximum-iterations-exceeded))
 
+(ert-deftest secant-method/basic ()
+  "Test basic functionality of the secant method."
+  (should (float-equal? (secant-method (lambda (x) (- (* x x) 2)) 1 2) (sqrt 2))))
+
+(ert-deftest secant-method/polynomial ()
+  "Test secant method on a polynomial equation."
+  (should (float-equal? (secant-method (lambda (x) (+ (* x x x) (* x x 3) (- (* 10 x)) (- 24))) 1 -1) -2)))
+
+(ert-deftest secant-method/tolerance ()
+  "Test secant method with a specified tolerance."
+  (should (float-equal? (secant-method (lambda (x) (+ (* x x) x (- 2))) 0 2 1e-3) 1 1e-3)))
+
+(ert-deftest secant-method/max-iterations ()
+  "Test secant method when maximum number of iterations is reached."
+  (should-error (secant-method (lambda (x) (+ (* x x) (- x) 1)) -2 -1 1e-10 1) :type 'cmna-maximum-iterations-exceeded))
+
+(ert-deftest secant-method/floating-point ()
+  "Test secant method with floating-point numbers."
+  (should (float-equal? (secant-method (lambda (x) (- (exp x) x 4)) 0.5 1.0) 1.7490313860127014)))
+
+(ert-deftest secant-method/negative-root ()
+  "Test secant method to find negative root."
+  (should (float-equal? (secant-method (lambda (x) (+ (* x x) x)) -2 -1) -1)))
+
+(ert-deftest secant-method/same-guesses ()
+  "Test secant method with identical initial guesses."
+  (should-error (secant-method (lambda (x) (+ (* x x) x)) 1 1) :type 'cmna-domain-error))  ; Replace 'some-error-type with the error you expect
+
 ;;; cmna-rootfinding-test.el ends here

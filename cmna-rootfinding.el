@@ -119,6 +119,47 @@ Example usage:
       (if (float-equal? guess next-guess tolerance) next-guess
         (newton-method-recur next-guess (1+ iteration))))))
 
+(defun secant-method (func guess-1 guess-2 &optional tolerance max-iterations)
+  "Use the Secant method to find a root of FUNC, starting with initial guesses
+  GUESS-1 and GUESS-2.
+
+Parameters:
+    FUNC: A function accepting a single argument, for which a root will be
+    found.
+    GUESS-1 and GUESS-2: Two distinct initial guesses to start the Secant
+    method.
+    TOLERANCE: Optional. Specifies the convergence tolerance; defaults to the
+    value of `cmna-default-tolerance`.
+    MAX-ITERATIONS: Optional. Specifies the maximum number of iterations;
+    defaults to the value of `cmna-default-maximum-iterations`.
+
+  Returns:
+    The approximate root of FUNC as calculated by the Secant method.
+
+  Signals:
+    \=cmna-domain-error\=: If GUESS-1 and GUESS-2 are identical.
+    \=cmna-maximum-iterations-exceeded\=: If the function does not converge within
+    MAX-ITERATIONS.
+
+  Example:
+    (secant-method (lambda (x) (- (* x x) 2)) 1 2)"
+  (unless tolerance (setq tolerance cmna-default-tolerance))
+  (unless max-iterations (setq max-iterations cmna-default-maximum-iterations))
+  (when (equal guess-1 guess-2)
+    (signal 'cmna-domain-error
+            (format "Guess 1 and guess 2 cannot be identical")))
+  (named-let secant-method-recur ((guess-1 (float guess-1))
+                                  (guess-2 (float guess-2))
+                                  (val-guess-1 (funcall func guess-1))
+                                  (iteration 0))
+    (when (>= iteration max-iterations)
+      (signal 'cmna-maximum-iterations-exceeded
+              (format "Secant method did not converge after %d iterations" max-iterations)))
+    (let* ((val-guess-2 (funcall func guess-2))
+           (guess-3 (- guess-2 (* val-guess-2 (/ (- guess-2 guess-1) (- val-guess-2 val-guess-1))))))
+      (if (float-equal? guess-2 guess-3 tolerance) guess-3
+        (secant-method-recur guess-2 guess-3 val-guess-2 (1+ iteration))))))
+
 (provide 'cmna-rootfinding)
 
 ;;; cmna-rootfinding.el ends here
