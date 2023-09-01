@@ -1,4 +1,4 @@
-;;; cmna-optimization-test.el --- Tests for cmna-el -*- lexical-binding: t; -*-
+;;; cmna-rootfinding-test.el --- Tests for cmna-el -*- lexical-binding: t; -*-
 
 ;; Tests for the bisection method
 (ert-deftest bisection-method/x2minus4 ()
@@ -60,4 +60,4 @@
   (defun test-func-derivative (x) (* 2 x))
   (should-error (newton-method 'test-func 'test-func-derivative 0) :type 'cmna-maximum-iterations-exceeded))
 
-;;; cmna-optimization-test.el ends here
+;;; cmna-rootfinding-test.el ends here

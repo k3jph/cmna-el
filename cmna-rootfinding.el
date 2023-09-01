@@ -1,4 +1,4 @@
-;;; cmna-optimization.el --- CMNA Optimization -*- lexical-binding: t; -*-
+;;; cmna-rootfinding.el --- CMNA Root Finding -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2023 James P. Howard, II
 ;;
@@ -119,6 +119,6 @@ Example usage:
       (if (float-equal? guess next-guess tolerance) next-guess
         (newton-method-recur next-guess (1+ iteration))))))
 
-(provide 'cmna-optimization)
+(provide 'cmna-rootfinding)
 
-;;; cmna-optimization.el ends here
+;;; cmna-rootfinding.el ends here
