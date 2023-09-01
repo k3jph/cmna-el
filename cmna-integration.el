@@ -34,13 +34,13 @@
   (unless (< 0 n)
     (signal 'cmna-domain-error
             (format "Midpoint rule requires a positive number of subintervals")))
-  (let ((h (/ (- b a) (float n))))
+  (let ((h (/ (- b a) (* 2.0 n))))
     (named-let midpoint-rule-recur
         ((current-sum 0.0) (iteration 0))
-      (if (>= iteration n)
-          (* h current-sum)
+      (if (equal iteration n)
+          (* h current-sum 2.0)
         (midpoint-rule-recur
-         (+ current-sum (funcall func (+ a (* iteration h))))
+         (+ current-sum (funcall func (+ a (* (1+ (* 2.0 iteration)) h))))
          (1+ iteration))))))
 
 
