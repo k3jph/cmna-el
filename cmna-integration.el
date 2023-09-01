@@ -31,6 +31,9 @@
 
   Example:
     (midpoint-rule-tail-recursive (lambda (x) (* x x)) 0 1 100)"
+  (unless (< 0 n)
+    (signal 'cmna-domain-error
+            (format "Midpoint rule requires a positive number of subintervals")))
   (let ((h (/ (- b a) (float n))))
     (named-let midpoint-rule-recur
         ((current-sum 0.0) (iteration 0))
