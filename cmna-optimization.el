@@ -18,6 +18,8 @@
 ;;
 ;;; Code:
 
+(require 'cmna-defaults)
+(require 'cmna-fundamentals)
 (require 'cmna-utilities)
 
 (defun bisection-method (func a b &optional tolerance max-iterations)
@@ -50,22 +52,26 @@ Errors:
 Example usage:
   ; Find a root of x^2 - 4 between -3 and 3
   (bisection-method (lambda (x) (- (* x x) 4)) -3 3)"
-  (unless tolerance (setq tolerance 1.0e-6))
-  (unless max-iterations (setq max-iterations 1e2))
+  (unless tolerance (setq tolerance cmna-default-tolerance))
+  (unless max-iterations (setq max-iterations cmna-default-maximum-iterations))
+  (unless (> 0 (* (funcall func a) (funcall func b)))
+    (signal 'cmna-domain-error "Invalid initial interval [a, b]. Ensure f(a) < 0 and f(b) > 0."))
   (when (>= 0 max-iterations)
     (signal 'cmna-maximum-iterations-exceeded
             (format "Bisection method did not converge after %d iterations" max-iterations)))
-  (let* ((fa (funcall func a))
-         (fb (funcall func b)))
-    (unless (>= 0 (* fa fb))
-      (signal 'cmna-domain-error "Invalid initial interval [a, b]. Ensure f(a) < 0 and f(b) > 0."))
-    (let* ((c (/ (+ a b) 2.0))
-           (fc (funcall func c)))
-      (if (float-equal? a b tolerance)
-          (/ (+ a b) 2.0)
-        (if (< 0 (* fa fc))
-            (bisection-method func a c tolerance (1- max-iterations)))
-        (bisection-method func c b tolerance (1- max-iterations))))))
+  (named-let bisection-method-recur ((lower-bound (min a b))
+                                     (upper-bound (max a b))
+                                     (val-lower-bound (funcall func (min a b)))
+                                     (iteration 0))
+    (when (>= iteration max-iterations)
+      (signal 'cmna-maximum-iterations-exceeded
+              (format "Bisection method did not converge after %d iterations" max-iterations)))
+    (let* ((inner-point (/ (+ lower-bound upper-bound) 2.0))
+           (val-inner-point (funcall func inner-point)))
+      (cond ((or (float-equal? lower-bound upper-bound tolerance) (= inner-point 0.0)) inner-point)
+            ((< 0 (* val-lower-bound val-inner-point))
+             (bisection-method-recur inner-point upper-bound val-inner-point (1+ iteration)))
+            (t (bisection-method-recur lower-bound inner-point val-lower-bound (1+ iteration)))))))
 
 (defun newton-method (func func-prime guess &optional tolerance max-iterations)
   "Find an approximate root of the function FUNC using Newton's method,
@@ -100,21 +106,18 @@ Errors:
 Example usage:
   ; Finds a root of x^2 - 4, starting from 2
   (newton-method (lambda (x) (- (* x x) 4)) (lambda (x) (* 2 x)) 2)"
-  (unless tolerance (setq tolerance 1e-6))
-  (unless max-iterations (setq max-iterations 1e2))
-  (let ((last-guess (+ guess (* 10 tolerance)))
-        (iteration 0))
-    (while (and (< iteration max-iterations)
-                (not (float-equal? guess last-guess (/ tolerance 10))))
-      (let* ((y (funcall func guess))
-             (y-derivative (float (funcall func-prime guess))))
-        (setq last-guess guess
-              guess (- guess (/ y y-derivative))
-              iteration (1+ iteration))))
+  (unless tolerance (setq tolerance cmna-default-tolerance))
+  (unless max-iterations (setq max-iterations cmna-default-maximum-iterations))
+  (named-let newton-method-recur ((guess (float guess))
+                                  (iteration 0))
     (when (>= iteration max-iterations)
-        (signal 'cmna-maximum-iterations-exceeded
-                (format "Newton's method did not converge after %d iterations" max-iterations)))
-    (identity last-guess)))
+      (signal 'cmna-maximum-iterations-exceeded
+              (format "Newton's method did not converge after %d iterations" max-iterations)))
+    (let* ((y (funcall func guess))
+           (y-derivative (funcall func-prime guess))
+           (next-guess (- guess (/ y y-derivative))))
+      (if (float-equal? guess next-guess tolerance) next-guess
+        (newton-method-recur next-guess (1+ iteration))))))
 
 (provide 'cmna-optimization)
 
