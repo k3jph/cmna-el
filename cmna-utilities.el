@@ -18,6 +18,8 @@
 ;;
 ;;; Code:
 
+(require 'cmna-defaults)
+
 ;; Floating point equality, because sometimes close enough is close enough
 (defun float-equal? (x y &optional tolerance)
   "Check for the equality of two floating-point numbers X and Y within a given
@@ -46,7 +48,7 @@ Example usage:
   (float-equal? 1.0 1.000000001) ;=> t
   (float-equal? 1.0 1.1)         ;=> nil
   (float-equal? 1.0 1.1 0.2)     ;=> t"
-  (unless tolerance (setq tolerance 1.0e-9))
+  (unless tolerance (setq tolerance cmna-default-tolerance))
   (when (>= 0 tolerance)
     (signal 'cmna-domain-error "Error tolerance must be greater than 0"))
   (<= (abs (- x y)) tolerance))
