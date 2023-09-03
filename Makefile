@@ -20,7 +20,7 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 compile: cask
-	cask emacs -batch -L . -L test --eval "(setq byte-compile-error-on-warn t)" -f batch-byte-compile $$(cask files); (ret=$$? ; exit $$ret)
+	cask emacs --batch -L . --eval "(setq byte-compile-error-on-warn t)" -f batch-byte-compile $$(cask files); (ret=$$? ; exit $$ret)
 
 test: compile
 	cask emacs --batch -L . -L test -l test/test-helper.el -f ert-run-tests-batch
