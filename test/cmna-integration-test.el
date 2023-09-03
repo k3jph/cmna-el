@@ -44,4 +44,32 @@
   "Test trapezoid-rule with sinusoidal function f(x) = sin(x)"
   (should (float-equal? (trapezoid-rule #'sin 0 (* 2 float-pi) 100) 0)))
 
+(ert-deftest simpsons-rule/constant-func ()
+  "Test simpsons-rule with a constant function f(x) = 1"
+  (should (float-equal? (simpsons-rule (lambda (x) 1) 0 1 100) 1)))
+
+(ert-deftest simpsons-rule/linear-func ()
+  "Test simpsons-rule with a linear function f(x) = x"
+  (should (float-equal? (simpsons-rule (lambda (x) x) 0 1 100) 0.5)))
+
+(ert-deftest simpsons-rule/quadratic-func ()
+  "Test simpsons-rule with a quadratic function f(x) = x^2"
+  (should (float-equal? (simpsons-rule (lambda (x) (* x x)) 0 1 100) (/ 1 3.0))))
+
+(ert-deftest simpsons-rule/cubic-func ()
+  "Test simpsons-rule with a cubic function f(x) = x^3"
+  (should (float-equal? (simpsons-rule (lambda (x) (* x x x)) 0 1 100) (/ 1 4.0))))
+
+(ert-deftest simpsons-rule/zero-interval ()
+  "Test simpsons-rule with zero interval"
+  (should (float-equal? (simpsons-rule (lambda (x) x) 0 0 100) 0)))
+
+(ert-deftest simpsons-rule/invalid-subintervals ()
+  "Test simpsons-rule with negative number of subintervals"
+  (should-error (simpsons-rule (lambda (x) x) 0 1 -1) :type 'cmna-domain-error))
+
+(ert-deftest simpsons-rule/sinusoidal-func ()
+  "Test simpsons-rule with sinusoidal function f(x) = sin(x)"
+  (should (float-equal? (simpsons-rule #'sin 0 (* 2 pi) 100) 0)))
+
 ;;; cmna-integration-test.el ends here
