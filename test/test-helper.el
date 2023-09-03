@@ -5,6 +5,7 @@
 
 (require 'cmna-fundamentals-test)
 (require 'cmna-integration-test)
+(require 'cmna-miscellaneous-test)
 (require 'cmna-rootfinding-test)
 (require 'cmna-utilities-test)
 
