@@ -72,4 +72,6 @@
   "Test simpsons-rule with sinusoidal function f(x) = sin(x)"
   (should (float-equal? (simpsons-rule #'sin 0 (* 2 pi) 100) 0)))
 
+(provide 'cmna-integration-test)
+
 ;;; cmna-integration-test.el ends here

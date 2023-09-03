@@ -88,4 +88,6 @@
   "Test secant method with identical initial guesses."
   (should-error (secant-method (lambda (x) (+ (* x x) x)) 1 1) :type 'cmna-domain-error))  ; Replace 'some-error-type with the error you expect
 
+(provide 'cmna-rootfinding-test)
+
 ;;; cmna-rootfinding-test.el ends here

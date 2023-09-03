@@ -87,4 +87,6 @@
   "Sequences where the increment doesn't divide evenly into the range"
   (should (equal (sequence 0 5 3) '(0 3))))
 
+(provide 'cmna-utilities-test)
+
 ;;; cmna-utilities-test.el ends here

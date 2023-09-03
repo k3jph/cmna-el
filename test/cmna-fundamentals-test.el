@@ -66,4 +66,5 @@
   "Test arithmetic mean with non-number elements."
   (should-error (arithmetic-mean '(1 2 "3"))))
 
+(provide 'cmna-fundamentals-test)
 ;;; cmna-fundamentals-test.el ends here
