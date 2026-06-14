@@ -22,8 +22,14 @@
 (defun cmna--finite-number-p (value)
   "Return non-nil when VALUE is a finite number."
   (and (numberp value)
-       (not (and (floatp value)
-                 (or (isnan value) (isinf value))))))
+       (= value value)
+       (or (integerp value)
+           (< (abs value) 1.0e+INF))))
+
+(defun cmna--same-sign-p (x y)
+  "Return non-nil when nonzero numbers X and Y have the same sign."
+  (or (and (> x 0) (> y 0))
+      (and (< x 0) (< y 0))))
 
 (defun cmna--checked-function-value (function argument label)
   "Call FUNCTION with ARGUMENT and validate the result.
@@ -49,7 +55,7 @@ silently.  Endpoint roots are returned immediately."
     (signal 'wrong-type-argument (list 'numberp b)))
   (setq tolerance (or tolerance cmna-default-tolerance))
   (setq max-iterations (or max-iterations cmna-default-maximum-iterations))
-  (unless (and (numberp tolerance) (> tolerance 0))
+  (unless (and (cmna--finite-number-p tolerance) (> tolerance 0))
     (signal 'cmna-domain-error '("Tolerance must be greater than zero")))
   (unless (and (integerp max-iterations) (> max-iterations 0))
     (signal 'cmna-domain-error
@@ -64,7 +70,7 @@ silently.  Endpoint roots are returned immediately."
     (cond
      ((zerop fa) a)
      ((zerop fb) b)
-     ((= (signum fa) (signum fb))
+     ((cmna--same-sign-p fa fb)
       (signal 'cmna-domain-error
               '("The initial interval does not bracket a root")))
      (t
@@ -83,11 +89,11 @@ silently.  Endpoint roots are returned immediately."
           (if (zerop fmid)
               (setq a midpoint
                     b midpoint)
-            (if (/= (signum fa) (signum fmid))
-                (setq b midpoint
-                      fb fmid)
-              (setq a midpoint
-                    fa fmid)))))
+            (if (cmna--same-sign-p fa fmid)
+                (setq a midpoint
+                      fa fmid)
+              (setq b midpoint
+                    fb fmid)))))
       (+ a (/ (- b a) 2.0))))))
 
 (defun newton-method (func func-prime guess &optional tolerance max-iterations)
