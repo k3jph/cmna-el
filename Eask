@@ -10,7 +10,7 @@
 (source "gnu")
 (source "melpa")
 
-(depends-on "emacs" "27.2")
+(depends-on "emacs" "28.2")
 
 (development
  (depends-on "ert-runner"))
