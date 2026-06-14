@@ -74,7 +74,7 @@
 
 (ert-deftest cmna-bisection/detects-midpoint-collapse ()
   (let* ((a 1.0)
-         (b (nextafter a 1.0e+INF)))
+         (b (+ a (* 4 least-positive-normalized-float))))
     (should-error
      (cmna-bisection
       (lambda (x)
