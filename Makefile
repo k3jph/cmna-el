@@ -1,30 +1,23 @@
-export EMACS ?= $(shell which emacs)
-CASK_DIR := $(shell cask package-directory)
-BUILD_DIR := ./dist
+EMACS ?= emacs
+BUILD_DIR := dist
 
-default: compile
+.PHONY: check clean compile install package test
 
-$(CASK_DIR): Cask
-	cask install
-	@touch $(CASK_DIR)
-
-.PHONY: cask clean compile test release
-
-default: compile
-
-cask: $(CASK_DIR)
+check: compile test
 
 clean:
-	cask clean-elc
-	git clean -f
+	eask clean all
 	rm -rf $(BUILD_DIR)
 
-compile: cask
-	cask emacs --batch -L . --eval "(setq byte-compile-error-on-warn t)" -f batch-byte-compile $$(cask files); (ret=$$? ; exit $$ret)
+install:
+	eask install-deps --dev
 
-test: compile
-	cask emacs --batch -L . -L test -l test/test-helper.el -f ert-run-tests-batch
+compile: install
+	eask compile
 
-release: compile test
-	cask pkg-file
-	cask package $(BUILD_DIR)
+test: install
+	eask run script test
+
+package: check
+	mkdir -p $(BUILD_DIR)
+	eask package $(BUILD_DIR)
