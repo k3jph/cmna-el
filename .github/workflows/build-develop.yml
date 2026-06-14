@@ -38,7 +38,9 @@ jobs:
           version: ${{ matrix.emacs_version }}
 
       - name: Install Cask
-        run: pipx install cask
+        run: |
+          git clone --depth 1 https://github.com/cask/cask.git "$HOME/.cask"
+          echo "$HOME/.cask/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
         run: cask install
