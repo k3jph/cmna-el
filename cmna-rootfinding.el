@@ -96,22 +96,52 @@ silently.  Endpoint roots are returned immediately."
                     fb fmid)))))
       (+ a (/ (- b a) 2.0))))))
 
-(defun newton-method (func func-prime guess &optional tolerance max-iterations)
-  "Find an approximate root of FUNC using Newton's method from GUESS."
-  (unless tolerance (setq tolerance cmna-default-tolerance))
-  (unless max-iterations (setq max-iterations cmna-default-maximum-iterations))
-  (named-let newton-method-recur ((guess (float guess))
-                                  (iteration 0))
-    (when (>= iteration max-iterations)
-      (signal 'cmna-maximum-iterations-exceeded
-              (format "Newton's method did not converge after %d iterations"
-                      max-iterations)))
-    (let* ((y (funcall func guess))
-           (y-derivative (funcall func-prime guess))
-           (next-guess (- guess (/ y y-derivative))))
-      (if (cmna-float-equal-p guess next-guess tolerance)
-          next-guess
-        (newton-method-recur next-guess (1+ iteration))))))
+(defun cmna-newton (function derivative guess &optional tolerance max-iterations)
+  "Return a root of FUNCTION using Newton iteration from GUESS.
+
+DERIVATIVE is the derivative of FUNCTION.  TOLERANCE defaults to
+`cmna-default-tolerance'.  MAX-ITERATIONS defaults to
+`cmna-default-maximum-iterations'."
+  (unless (functionp function)
+    (signal 'wrong-type-argument (list 'functionp function)))
+  (unless (functionp derivative)
+    (signal 'wrong-type-argument (list 'functionp derivative)))
+  (unless (cmna--finite-number-p guess)
+    (signal 'wrong-type-argument (list 'numberp guess)))
+  (setq tolerance (or tolerance cmna-default-tolerance))
+  (setq max-iterations (or max-iterations cmna-default-maximum-iterations))
+  (unless (and (cmna--finite-number-p tolerance) (> tolerance 0))
+    (signal 'cmna-domain-error '("Tolerance must be greater than zero")))
+  (unless (and (integerp max-iterations) (> max-iterations 0))
+    (signal 'cmna-domain-error
+            '("Maximum iterations must be a positive integer")))
+  (let ((x guess)
+        (fx (cmna--checked-function-value function guess "f(x)"))
+        (iteration 0))
+    (when (zerop fx)
+      (cl-return-from cmna-newton x))
+    (while (< iteration max-iterations)
+      (let ((fpx (cmna--checked-function-value derivative x "f'(x)")))
+        (when (zerop fpx)
+          (signal 'cmna-domain-error
+                  '("Derivative is zero at the current estimate")))
+        (let ((next-x (- x (/ fx fpx))))
+          (unless (cmna--finite-number-p next-x)
+            (signal 'cmna-domain-error
+                    '("Next estimate must be a finite number")))
+          (when (<= (abs (- next-x x)) tolerance)
+            (cl-return-from cmna-newton next-x))
+          (when (= next-x x)
+            (signal 'cmna-domain-error
+                    '("Newton iteration can no longer advance")))
+          (setq x next-x)
+          (setq fx (cmna--checked-function-value function x "f(x)"))
+          (when (zerop fx)
+            (cl-return-from cmna-newton x))))
+      (setq iteration (1+ iteration)))
+    (signal 'cmna-maximum-iterations-exceeded
+            (list (format "Newton's method did not converge after %d iterations"
+                          max-iterations)))))
 
 (defun secant-method (func guess-1 guess-2 &optional tolerance max-iterations)
   "Use the secant method to find a root of FUNC."
