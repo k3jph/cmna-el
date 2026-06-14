@@ -37,16 +37,10 @@ jobs:
         with:
           version: ${{ matrix.emacs_version }}
 
-      - name: Install Cask
-        run: |
-          git clone --depth 1 https://github.com/cask/cask.git "$HOME/.cask"
-          echo "$HOME/.cask/bin" >> "$GITHUB_PATH"
+      - name: Set up Eask
+        uses: emacs-eask/setup-eask@master
+        with:
+          version: snapshot
 
-      - name: Install dependencies
-        run: cask install
-
-      - name: Compile
-        run: make compile
-
-      - name: Run tests
-        run: make test
+      - name: Run checks
+        run: make check
