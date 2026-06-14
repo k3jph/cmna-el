@@ -6,15 +6,14 @@
 ;; Maintainer: James P. Howard, II <jh@jameshoward.us>
 ;; Keywords: tools
 ;; Homepage: https://github.com/k3jph/cmna-el
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "28.2"))
 ;; Package-Version: 0.1.0
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
 ;;; Commentary:
 ;;
-;;  This is Computationl Methods for Numerical Analysis in
-;;  Emacs Lisp.
+;; Computational Methods for Numerical Analysis in Emacs Lisp.
 ;;
 ;;; Code:
 
