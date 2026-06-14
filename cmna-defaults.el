@@ -1,4 +1,4 @@
-;;; cmna-defaults.el --- CMNA Defaults -*- lexical-binding: t; -*-
+;;; cmna-defaults.el --- CMNA defaults -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2023 James P. Howard, II
 ;;
@@ -11,13 +11,23 @@
 ;;
 ;;; Commentary:
 ;;
-;;  This is Computationl Methods for Numerical Analysis in
-;;  Emacs Lisp.
+;; Default values shared by CMNA numerical methods.
 ;;
 ;;; Code:
 
-(defvar cmna-default-tolerance                  1e-9)
-(defvar cmna-default-maximum-iterations         1e3)
+(defgroup cmna nil
+  "Computational Methods for Numerical Analysis in Emacs Lisp."
+  :group 'applications)
+
+(defcustom cmna-default-tolerance 1e-9
+  "Default numerical tolerance used by CMNA algorithms."
+  :type 'number
+  :group 'cmna)
+
+(defcustom cmna-default-maximum-iterations 1000
+  "Default maximum iteration count used by CMNA algorithms."
+  :type 'integer
+  :group 'cmna)
 
 (provide 'cmna-defaults)
 

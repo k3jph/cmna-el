@@ -1,4 +1,4 @@
-;;; cmna-utilities.el --- CMNA Utilities -*- lexical-binding: t; -*-
+;;; cmna-utilities.el --- CMNA utilities -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2023 James P. Howard, II
 ;;
@@ -11,86 +11,46 @@
 ;;
 ;;; Commentary:
 ;;
-;;  This is Computationl Methods for Numerical Analysis in
-;;  Emacs Lisp.
+;; Shared numerical helpers for CMNA algorithms.
 ;;
 ;;; Code:
 
 (require 'cmna-defaults)
+(require 'cmna-errors)
 
-;; Floating point equality, because sometimes close enough is close enough
-(defun float-equal? (x y &optional tolerance)
-  "Check for the equality of two floating-point numbers X and Y within a given
-TOLERANCE.
+(defun cmna-float-equal-p (x y &optional tolerance)
+  "Return non-nil when X and Y differ by no more than TOLERANCE.
 
-This function determines whether two floating-point numbers, X and Y, are equal
-to within a specified TOLERANCE. The default tolerance is 1.0e-9 if not
-provided.
-
-Arguments:
-  X, Y         : Floating-point numbers to compare.
-  TOLERANCE    : Optional. A positive floating-point number indicating the
-                 maximum allowed difference between X and Y for them to be
-                 considered equal. Defaults to 1.0e-9.
-
-Returns:
-  A boolean value indicating whether X and Y are equal within the given
-  TOLERANCE.
-
-
-Errors:
-  Signals a \=cmna-domain-error\= if the provided TOLERANCE is not greater than
-  zero.
-
-Example usage:
-  (float-equal? 1.0 1.000000001) ;=> t
-  (float-equal? 1.0 1.1)         ;=> nil
-  (float-equal? 1.0 1.1 0.2)     ;=> t"
-  (unless tolerance (setq tolerance cmna-default-tolerance))
-  (when (>= 0 tolerance)
-    (signal 'cmna-domain-error "Error tolerance must be greater than 0"))
+TOLERANCE defaults to `cmna-default-tolerance' and must be positive."
+  (setq tolerance (or tolerance cmna-default-tolerance))
+  (unless (and (numberp x) (numberp y) (numberp tolerance))
+    (signal 'wrong-type-argument '(numberp)))
+  (when (<= tolerance 0)
+    (signal 'cmna-domain-error '("Tolerance must be greater than zero")))
   (<= (abs (- x y)) tolerance))
 
-;; We will need this in some of our functions
-(defun sequence (from to by)
-  "Generate a sequence of numbers from FROM to TO with an increment of BY.
+(defun cmna-sequence (from to by)
+  "Return a numeric sequence from FROM toward TO in increments of BY.
 
-This function returns a list of numbers starting from FROM, incrementing by BY,
-and ending at a value that is less than or equal to TO. The increment BY can be
-positive or negative, but not zero.
-
-Arguments:
-  FROM  : The starting number of the sequence.
-  TO    : The end boundary for the sequence. The sequence will not contain
-          numbers greater than TO for positive BY or numbers smaller than TO for
-          negative BY.
-  BY    : The increment by which consecutive numbers in the sequence will
-          differ. Must be non-zero.
-
-Returns:
-  A list containing the generated sequence of numbers.
-
-Errors:
-  Signals a \=cmna-domain-error\= in the following cases:
-  - Increment BY is negative, but FROM is less than TO.
-  - Increment BY is positive, but FROM is greater than TO.
-  - Increment BY is zero.
-
-Example usage:
-  (sequence 0 5 1)   ;=> (0 1 2 3 4 5)
-  (sequence 5 0 -1)  ;=> (5 4 3 2 1 0)
-  (sequence 0 5 0.5) ;=> (0 0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0)"
-  (when (and (< from to) (< by 0))
-    (signal 'cmna-domain-error "Increment is negative but 'from' is less than 'to'."))
-  (when (and (> from to) (> by 0))
-    (signal 'cmna-domain-error "Increment is positive but 'from' is greater than 'to'."))
-  (when (equal by 0)
-    (signal 'cmna-domain-error "Increment must be greater than zero"))
-  (let ((seq (list from)))
-    (dotimes
-        (i (/ (- to from) by))
-      (push (+ from (* by (+ 1 i))) seq))
-    (nreverse seq)))
+The endpoint is included when reached exactly.  Signal `cmna-domain-error'
+when BY is zero or points away from TO."
+  (unless (and (numberp from) (numberp to) (numberp by))
+    (signal 'wrong-type-argument '(numberp)))
+  (when (= by 0)
+    (signal 'cmna-domain-error '("Increment must be nonzero")))
+  (when (or (and (< from to) (< by 0))
+            (and (> from to) (> by 0)))
+    (signal 'cmna-domain-error '("Increment points away from endpoint")))
+  (let ((value from)
+        result)
+    (if (> by 0)
+        (while (<= value to)
+          (push value result)
+          (setq value (+ value by)))
+      (while (>= value to)
+        (push value result)
+        (setq value (+ value by))))
+    (nreverse result)))
 
 (provide 'cmna-utilities)
 
