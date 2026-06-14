@@ -74,12 +74,12 @@
 
 (ert-deftest cmna-bisection/detects-midpoint-collapse ()
   (let* ((a 1.0)
-         (b (+ a (* 4 least-positive-normalized-float))))
+         (b (+ a 1e-15)))
     (should-error
      (cmna-bisection
       (lambda (x)
         (if (= x a) -1 1))
-      a b least-positive-normalized-float)
+      a b 1e-18)
      :type 'cmna-domain-error)))
 
 (provide 'cmna-rootfinding-test)
