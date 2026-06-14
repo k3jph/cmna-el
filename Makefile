@@ -16,7 +16,7 @@ compile: install
 	eask compile
 
 test: install
-	eask run script test
+	eask exec ert-runner test
 
 package: check
 	mkdir -p $(BUILD_DIR)
