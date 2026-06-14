@@ -1,4 +1,4 @@
-;;; cmna-fundamentals.el --- CMNA Fundamentals -*- lexical-binding: t; -*-
+;;; cmna-fundamentals.el --- CMNA fundamentals -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2023 James P. Howard, II
 ;;
@@ -11,64 +11,29 @@
 ;;
 ;;; Commentary:
 ;;
-;;  This is Computationl Methods for Numerical Analysis in
-;;  Emacs Lisp.
+;; Fundamental numerical operations used by CMNA algorithms.
 ;;
 ;;; Code:
 
-(defun sum (x)
-  "Compute the sum of a list of numbers.
+(require 'cmna-errors)
 
-Arguments:
-  X : A list of numerical elements to be summed.
+(defun cmna-sum (numbers)
+  "Return the sum of NUMBERS.
 
-Returns:
-  The sum of all numerical elements in the list X.
+NUMBERS must be a list of numeric values.  The empty list returns 0."
+  (let ((running-sum 0))
+    (dolist (number numbers running-sum)
+      (unless (numberp number)
+        (signal 'wrong-type-argument (list 'numberp number)))
+      (setq running-sum (+ running-sum number)))))
 
-Example:
-  (sum \=(1 2 3))  ; Returns 6
+(defun cmna-arithmetic-mean (numbers)
+  "Return the arithmetic mean of NUMBERS.
 
-Notes:
-  - The function uses tail recursion for efficiency.
-  - An empty list returns 0.
-
-Raises:
-
-  - This function does not perform type-checking. Ensure that the list contains
-    only numbers."
-
-  (named-let sum-recur ((numbers x)
-                        (running-sum 0))
-    (if numbers
-        (sum-recur (cdr numbers) (+ running-sum (car numbers)))
-      (identity running-sum))))
-
-(defun arithmetic-mean (x)
-  "Compute the arithmetic mean of a list of numbers.
-
-Arguments:
-  X : A list of numerical elements for which the arithmetic mean is to be
-      calculated.
-
-Returns:
-  The arithmetic mean of all numerical elements in the list X.
-
-Example:
-  (arithmetic-mean \=(1 2 3))  ; Returns 2
-
-Notes:
-
-  - The function does not perform type-checking. Ensure that the list contains
-    only numbers.
-  - An empty list will result in a division-by-zero error.
-
-Raises:
-  - Division-by-zero error if the list is empty."
-  (let ((count (float (length x))))
-    (if (equal count 0.0)
-        (signal 'cmna-underflow-error
-                (format "Cannot calculate mean of empty list"))
-      (/ (sum x) count))))
+Signal `cmna-domain-error' when NUMBERS is empty."
+  (when (null numbers)
+    (signal 'cmna-domain-error '("Cannot calculate the mean of an empty list")))
+  (/ (float (cmna-sum numbers)) (length numbers)))
 
 (provide 'cmna-fundamentals)
 
