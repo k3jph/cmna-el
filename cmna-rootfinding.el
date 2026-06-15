@@ -117,31 +117,39 @@ DERIVATIVE is the derivative of FUNCTION.  TOLERANCE defaults to
             '("Maximum iterations must be a positive integer")))
   (let ((x guess)
         (fx (cmna--checked-function-value function guess "f(x)"))
-        (iteration 0))
-    (when (zerop fx)
-      (cl-return-from cmna-newton x))
-    (while (< iteration max-iterations)
-      (let ((fpx (cmna--checked-function-value derivative x "f'(x)")))
-        (when (zerop fpx)
-          (signal 'cmna-domain-error
-                  '("Derivative is zero at the current estimate")))
-        (let ((next-x (- x (/ fx fpx))))
-          (unless (cmna--finite-number-p next-x)
+        (iteration 0)
+        (result nil)
+        (converged nil))
+    (if (zerop fx)
+        x
+      (while (and (< iteration max-iterations) (not converged))
+        (let ((fpx (cmna--checked-function-value derivative x "f'(x)")))
+          (when (zerop fpx)
             (signal 'cmna-domain-error
-                    '("Next estimate must be a finite number")))
-          (when (<= (abs (- next-x x)) tolerance)
-            (cl-return-from cmna-newton next-x))
-          (when (= next-x x)
-            (signal 'cmna-domain-error
-                    '("Newton iteration can no longer advance")))
-          (setq x next-x)
-          (setq fx (cmna--checked-function-value function x "f(x)"))
-          (when (zerop fx)
-            (cl-return-from cmna-newton x))))
-      (setq iteration (1+ iteration)))
-    (signal 'cmna-maximum-iterations-exceeded
-            (list (format "Newton's method did not converge after %d iterations"
-                          max-iterations)))))
+                    '("Derivative is zero at the current estimate")))
+          (let ((next-x (- x (/ fx fpx))))
+            (unless (cmna--finite-number-p next-x)
+              (signal 'cmna-domain-error
+                      '("Next estimate must be a finite number")))
+            (cond
+             ((<= (abs (- next-x x)) tolerance)
+              (setq result next-x
+                    converged t))
+             ((= next-x x)
+              (signal 'cmna-domain-error
+                      '("Newton iteration can no longer advance")))
+             (t
+              (setq x next-x)
+              (setq fx (cmna--checked-function-value function x "f(x)"))
+              (when (zerop fx)
+                (setq result x
+                      converged t))))))
+        (setq iteration (1+ iteration)))
+      (if converged
+          result
+        (signal 'cmna-maximum-iterations-exceeded
+                (list (format "Newton's method did not converge after %d iterations"
+                              max-iterations)))))))
 
 (defun secant-method (func guess-1 guess-2 &optional tolerance max-iterations)
   "Use the secant method to find a root of FUNC."
