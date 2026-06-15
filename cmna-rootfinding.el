@@ -115,11 +115,12 @@ DERIVATIVE is the derivative of FUNCTION.  TOLERANCE defaults to
   (unless (and (integerp max-iterations) (> max-iterations 0))
     (signal 'cmna-domain-error
             '("Maximum iterations must be a positive integer")))
-  (let ((x guess)
-        (fx (cmna--checked-function-value function guess "f(x)"))
+  (let ((x (float guess))
+        (fx nil)
         (iteration 0)
         (result nil)
         (converged nil))
+    (setq fx (cmna--checked-function-value function x "f(x)"))
     (if (zerop fx)
         x
       (while (and (< iteration max-iterations) (not converged))
