@@ -7,10 +7,14 @@ on:
       - 'feature/**'
       - 'release/**'
       - 'hotfix/**'
+      - 'chore/**'
   pull_request:
     branches:
       - develop
   workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 permissions:
   contents: read
@@ -29,7 +33,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Emacs
         uses: purcell/setup-emacs@master
