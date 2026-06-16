@@ -2,5 +2,6 @@
 
 (require 'cmna)
 (require 'ert)
+(require 'cmna-test-helpers)
 
 ;;; test-helper.el ends here
