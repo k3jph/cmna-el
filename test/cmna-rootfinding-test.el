@@ -3,19 +3,20 @@
 (require 'ert)
 (require 'cmna-errors)
 (require 'cmna-rootfinding)
+(require 'cmna-test-helpers)
 (require 'cmna-utilities)
 
 (ert-deftest cmna-bisection/finds-known-root ()
   (let ((root (cmna-bisection (lambda (x) (- (* x x) 2))
                               1 2 1e-10)))
-    (should (cmna-float-equal-p root (sqrt 2) 1e-10))))
+    (cmna-should-float= root (sqrt 2) 1e-10)))
 
 (ert-deftest cmna-bisection/reorders-reversed-endpoints ()
   (let ((function (lambda (x) (- (* x x) 2))))
-    (should (cmna-float-equal-p
-             (cmna-bisection function 2 1 1e-10)
-             (cmna-bisection function 1 2 1e-10)
-             1e-12))))
+    (cmna-should-float=
+     (cmna-bisection function 2 1 1e-10)
+     (cmna-bisection function 1 2 1e-10)
+     1e-12)))
 
 (ert-deftest cmna-bisection/returns-endpoint-root ()
   (let ((function (lambda (x) (- x 2))))
@@ -87,7 +88,7 @@
                            (lambda (x) (* 2 x))
                            1
                            1e-10)))
-    (should (cmna-float-equal-p root (sqrt 2) 1e-10))))
+    (cmna-should-float= root (sqrt 2) 1e-10)))
 
 (ert-deftest cmna-newton/returns-initial-root ()
   (should (= (cmna-newton (lambda (x) (- x 2))
