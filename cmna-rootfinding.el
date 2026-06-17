@@ -152,30 +152,80 @@ DERIVATIVE is the derivative of FUNCTION.  TOLERANCE defaults to
                 (list (format "Newton's method did not converge after %d iterations"
                               max-iterations)))))))
 
-(defun secant-method (func guess-1 guess-2 &optional tolerance max-iterations)
-  "Use the secant method to find a root of FUNC."
-  (unless tolerance (setq tolerance cmna-default-tolerance))
-  (unless max-iterations (setq max-iterations cmna-default-maximum-iterations))
-  (when (equal guess-1 guess-2)
+(defun cmna-secant (function x0 x1 &optional tolerance max-iterations)
+  "Return a root of FUNCTION using secant iteration from X0 and X1.
+
+X0 and X1 must be distinct finite initial estimates.  TOLERANCE defaults to
+`cmna-default-tolerance' and measures the absolute change between successive
+estimates.  MAX-ITERATIONS defaults to
+`cmna-default-maximum-iterations'.
+
+Return immediately when either initial estimate is an exact root.  Signal
+`cmna-domain-error' when a function value, denominator, or update is invalid,
+or when floating-point arithmetic prevents the iteration from advancing.
+Signal `cmna-maximum-iterations-exceeded' when convergence is not achieved
+within MAX-ITERATIONS."
+  (unless (functionp function)
+    (signal 'wrong-type-argument (list 'functionp function)))
+  (unless (cmna--finite-number-p x0)
+    (signal 'wrong-type-argument (list 'numberp x0)))
+  (unless (cmna--finite-number-p x1)
+    (signal 'wrong-type-argument (list 'numberp x1)))
+  (when (= x0 x1)
     (signal 'cmna-domain-error
-            (format "Guess 1 and guess 2 cannot be identical")))
-  (named-let secant-method-recur ((guess-1 (float guess-1))
-                                  (guess-2 (float guess-2))
-                                  (val-guess-1 (funcall func guess-1))
-                                  (iteration 0))
-    (when (>= iteration max-iterations)
-      (signal 'cmna-maximum-iterations-exceeded
-              (format "Secant method did not converge after %d iterations"
-                      max-iterations)))
-    (let* ((val-guess-2 (funcall func guess-2))
-           (guess-3 (- guess-2
-                       (* val-guess-2
-                          (/ (- guess-2 guess-1)
-                             (- val-guess-2 val-guess-1))))))
-      (if (cmna-float-equal-p guess-2 guess-3 tolerance)
-          guess-3
-        (secant-method-recur guess-2 guess-3 val-guess-2
-                             (1+ iteration))))))
+            '("Initial estimates must be distinct")))
+  (setq tolerance (or tolerance cmna-default-tolerance))
+  (setq max-iterations (or max-iterations cmna-default-maximum-iterations))
+  (unless (and (cmna--finite-number-p tolerance) (> tolerance 0))
+    (signal 'cmna-domain-error '("Tolerance must be greater than zero")))
+  (unless (and (integerp max-iterations) (> max-iterations 0))
+    (signal 'cmna-domain-error
+            '("Maximum iterations must be a positive integer")))
+  (let* ((x0 (float x0))
+         (x1 (float x1))
+         (f0 (cmna--checked-function-value function x0 "f(x0)"))
+         (f1 (cmna--checked-function-value function x1 "f(x1)"))
+         (iteration 0)
+         (result nil)
+         (converged nil))
+    (cond
+     ((zerop f0) x0)
+     ((zerop f1) x1)
+     (t
+      (while (and (< iteration max-iterations) (not converged))
+        (let ((denominator (- f1 f0)))
+          (unless (cmna--finite-number-p denominator)
+            (signal 'cmna-domain-error
+                    '("Secant denominator must be a finite number")))
+          (when (zerop denominator)
+            (signal 'cmna-domain-error
+                    '("Secant denominator is zero")))
+          (let ((next-x (- x1
+                           (* f1
+                              (/ (- x1 x0) denominator)))))
+            (unless (cmna--finite-number-p next-x)
+              (signal 'cmna-domain-error
+                      '("Next estimate must be a finite number")))
+            (when (= next-x x1)
+              (signal 'cmna-domain-error
+                      '("Secant iteration can no longer advance")))
+            (if (<= (abs (- next-x x1)) tolerance)
+                (setq result next-x
+                      converged t)
+              (setq x0 x1
+                    f0 f1
+                    x1 next-x
+                    f1 (cmna--checked-function-value function next-x
+                                                     "f(x1)"))
+              (when (zerop f1)
+                (setq result x1
+                      converged t)))))
+        (setq iteration (1+ iteration)))
+      (if converged
+          result
+        (signal 'cmna-maximum-iterations-exceeded
+                (list (format "Secant method did not converge after %d iterations"
+                              max-iterations))))))))
 
 (provide 'cmna-rootfinding)
 
