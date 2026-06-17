@@ -1,6 +1,7 @@
 ;;; cmna-integration.el --- CMNA Integration -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2023 James P. Howard, II
+;; SPDX-License-Identifier: BSD-2-Clause
 ;;
 ;; Author: James P. Howard, II <jh@jameshoward.us>
 ;; Maintainer: James P. Howard, II <jh@jameshoward.us>
@@ -18,7 +19,7 @@
 
 (defun midpoint-rule (func a b n)
   "Calculates the integral of FUNC from A to B using N intervals with the
-  midpoint rule.
+midpoint rule.
 
   Parameters:
     FUNC: The function to integrate.
@@ -45,7 +46,7 @@
 
 (defun trapezoid-rule (func a b n)
   "Calculates the integral of FUNC from A to B using N intervals with the
-  trapezoid rule.
+trapezoid rule.
 
   Parameters:
     FUNC: The function to integrate.
@@ -76,7 +77,7 @@
 
 (defun simpsons-rule(func a b n)
   "Calculates the integral of FUNC from A to B using N intervals with the
-  Simpson's rule.
+Simpson's rule.
 
   Parameters:
     FUNC: The function to integrate.
