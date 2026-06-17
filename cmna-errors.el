@@ -1,6 +1,7 @@
 ;;; cmna-errors.el --- CMNA Errors -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2023 James P. Howard, II
+;; SPDX-License-Identifier: BSD-2-Clause
 ;;
 ;; Author: James P. Howard, II <jh@jameshoward.us>
 ;; Maintainer: James P. Howard, II <jh@jameshoward.us>

@@ -12,6 +12,7 @@
 [[https://www.gnu.org/software/emacs/][file:https://img.shields.io/badge/Emacs-28.2%2B-7F5AB6.svg?logo=gnuemacs&logoColor=white]]
 [[https://github.com/k3jph/cmna-el][file:https://img.shields.io/badge/version-0.1.0-blue.svg]]
 [[https://github.com/k3jph/cmna-el/tree/develop][file:https://img.shields.io/badge/status-active%20development-orange.svg]]
+[[https://github.com/k3jph/cmna-el/blob/develop/LICENSE][file:https://img.shields.io/badge/license-BSD--2--Clause-blue.svg]]
 
 CMNA provides computational methods for numerical analysis in Emacs Lisp.  It
 includes fundamental numerical helpers, root-finding algorithms, and numerical
@@ -216,6 +217,11 @@ The R implementation of Computational Methods for Numerical Analysis is
 maintained separately in [[https://github.com/k3jph/cmna-pkg][cmna-pkg]].  The two
 projects share a numerical-methods focus but are not guaranteed to expose
 identical APIs.
+
+* License
+
+CMNA is released under the BSD 2-Clause License.  See [[file:LICENSE][LICENSE]] for
+details.
 
 * Version
 

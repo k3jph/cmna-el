@@ -1,4 +1,5 @@
 ;;; cmna-rootfinding-test.el --- Tests for CMNA root finding -*- lexical-binding: t; -*-
+;; SPDX-License-Identifier: BSD-2-Clause
 
 (require 'ert)
 (require 'cmna-errors)
