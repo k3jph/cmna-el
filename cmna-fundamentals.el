@@ -18,15 +18,50 @@
 
 (require 'cmna-errors)
 
-(defun cmna-sum (numbers)
-  "Return the sum of NUMBERS.
+(defun cmna--validate-number-list (numbers label)
+  "Return NUMBERS when it is a proper list of numbers.
 
-NUMBERS must be a list of numeric values.  The empty list returns 0."
+LABEL identifies the argument in errors."
+  (unless (listp numbers)
+    (signal 'wrong-type-argument (list 'listp numbers label)))
+  (dolist (number numbers)
+    (unless (numberp number)
+      (signal 'wrong-type-argument (list 'numberp number label))))
+  numbers)
+
+(defun cmna-naive-sum (numbers)
+  "Return the left-to-right sum of NUMBERS.
+
+NUMBERS must be a proper list of numeric values.  The empty list returns 0.
+This function intentionally performs direct accumulation and is sensitive to
+floating-point ordering and scale."
+  (cmna--validate-number-list numbers "numbers")
   (let ((running-sum 0))
     (dolist (number numbers running-sum)
-      (unless (numberp number)
-        (signal 'wrong-type-argument (list 'numberp number)))
       (setq running-sum (+ running-sum number)))))
+
+(defun cmna-sum (numbers)
+  "Return the left-to-right sum of NUMBERS.
+
+This is the historical CMNA summation function and is equivalent to
+`cmna-naive-sum'.  NUMBERS must be a proper list of numeric values.  The empty
+list returns 0."
+  (cmna-naive-sum numbers))
+
+(defun cmna-kahan-sum (numbers)
+  "Return the Kahan compensated sum of NUMBERS.
+
+NUMBERS must be a proper list of numeric values.  The empty list returns 0.
+Kahan summation maintains a compensation term for low-order information lost
+to floating-point rounding during the previous addition."
+  (cmna--validate-number-list numbers "numbers")
+  (let ((running-sum 0.0)
+        (compensation 0.0))
+    (dolist (number numbers running-sum)
+      (let* ((adjusted (- number compensation))
+             (temporary (+ running-sum adjusted)))
+        (setq compensation (- (- temporary running-sum) adjusted)
+              running-sum temporary)))))
 
 (defun cmna-arithmetic-mean (numbers)
   "Return the arithmetic mean of NUMBERS.

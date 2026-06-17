@@ -55,12 +55,19 @@ git switch develop
 (cmna-sum '(1 2 3 4))
 ;; => 10
 
+(cmna-kahan-sum
+ (append (list 1.0) (make-list 1000 1e-16) (list -1.0)))
+;; => approximately 1e-13
+
 (cmna-arithmetic-mean '(1 2 3 4))
 ;; => 2.5
 
 (cmna-sequence 0 1 0.25)
 ;; => (0 0.25 0.5 0.75 1.0)
 #+END_SRC
+
+The summation contract shared conceptually with the R implementation is
+recorded in [[file:SUMMATION.md][SUMMATION.md]].
 
 ** Root finding
 
@@ -114,7 +121,12 @@ Their names and validation behavior may change before CMNA reaches version 1.0.
 
 ** Fundamentals
 
-- ~cmna-sum NUMBERS~ — return the sum of a list of numbers.
+- ~cmna-sum NUMBERS~ — return the historical left-to-right sum of a list of
+  numbers.
+- ~cmna-naive-sum NUMBERS~ — return the explicit left-to-right sum of a list of
+  numbers.
+- ~cmna-kahan-sum NUMBERS~ — return the Kahan compensated sum of a list of
+  numbers.
 - ~cmna-arithmetic-mean NUMBERS~ — return the arithmetic mean of a non-empty
   list of numbers.
 
@@ -180,6 +192,12 @@ The completed reference family now includes:
 - the secant method;
 - shared numerical validation helpers;
 - specific numerical-breakdown and convergence conditions; and
+- canonical semantic comparison with ~cmna-pkg~.
+
+Phase 2 has begun with the summation family:
+
+- left-to-right summation through ~cmna-sum~ and ~cmna-naive-sum~;
+- Kahan compensated summation through ~cmna-kahan-sum~; and
 - canonical semantic comparison with ~cmna-pkg~.
 
 The integration module remains functional but is the next major legacy area to
