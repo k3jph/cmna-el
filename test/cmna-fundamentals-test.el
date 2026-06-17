@@ -6,6 +6,32 @@
 (require 'cmna-fundamentals)
 (require 'cmna-utilities)
 
+(ert-deftest cmna-naive-sum/basic ()
+  (should (= (cmna-naive-sum '(1 2 3 4)) 10)))
+
+(ert-deftest cmna-naive-sum/empty-list ()
+  (should (= (cmna-naive-sum nil) 0)))
+
+(ert-deftest cmna-naive-sum/single-element ()
+  (should (= (cmna-naive-sum '(7)) 7)))
+
+(ert-deftest cmna-naive-sum/negative-numbers ()
+  (should (= (cmna-naive-sum '(-1 -2 -3)) -6)))
+
+(ert-deftest cmna-naive-sum/floating-point ()
+  (should (cmna-float-equal-p (cmna-naive-sum '(1.1 2.1 3.1)) 6.3)))
+
+(ert-deftest cmna-naive-sum/incorrect-argument ()
+  (should-error (cmna-naive-sum '(1 2 "3")) :type 'wrong-type-argument)
+  (should-error (cmna-naive-sum [1 2 3]) :type 'wrong-type-argument))
+
+(ert-deftest cmna-naive-sum/is-intentionally-left-to-right ()
+  (let ((numbers (append (list 1.0)
+                         (make-list 1000 1e-16)
+                         (list -1.0))))
+    (should (= (cmna-naive-sum numbers) 0.0))
+    (should (> (cmna-kahan-sum numbers) (cmna-naive-sum numbers)))))
+
 (ert-deftest cmna-sum/basic ()
   (should (= (cmna-sum '(1 2 3 4)) 10)))
 
@@ -23,6 +49,27 @@
 
 (ert-deftest cmna-sum/incorrect-argument ()
   (should-error (cmna-sum '(1 2 "3")) :type 'wrong-type-argument))
+
+(ert-deftest cmna-kahan-sum/basic ()
+  (should (= (cmna-kahan-sum '(1 2 3 4)) 10.0)))
+
+(ert-deftest cmna-kahan-sum/empty-list ()
+  (should (= (cmna-kahan-sum nil) 0.0)))
+
+(ert-deftest cmna-kahan-sum/single-element ()
+  (should (= (cmna-kahan-sum '(7)) 7.0)))
+
+(ert-deftest cmna-kahan-sum/incorrect-argument ()
+  (should-error (cmna-kahan-sum '(1 2 "3")) :type 'wrong-type-argument)
+  (should-error (cmna-kahan-sum [1 2 3]) :type 'wrong-type-argument))
+
+(ert-deftest cmna-kahan-sum/recovers-low-order-additions ()
+  (let ((numbers (append (list 1.0)
+                         (make-list 1000 1e-16)
+                         (list -1.0))))
+    (cmna-should-float= (cmna-kahan-sum numbers) 1e-13 1e-15)
+    (should (< (abs (- (cmna-kahan-sum numbers) 1e-13))
+               (abs (- (cmna-naive-sum numbers) 1e-13))))))
 
 (ert-deftest cmna-arithmetic-mean/basic ()
   (should (cmna-float-equal-p (cmna-arithmetic-mean '(1 2 3 4)) 2.5)))
