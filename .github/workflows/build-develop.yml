@@ -46,17 +46,4 @@ jobs:
           version: snapshot
 
       - name: Run checks
-        run: |
-          set +e
-          make check > check.log 2>&1
-          status=$?
-          cat check.log
-          exit "$status"
-
-      - name: Upload diagnostic log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: check-log-${{ matrix.emacs_version }}
-          path: check.log
-          if-no-files-found: error
+        run: make check
