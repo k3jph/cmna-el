@@ -150,6 +150,95 @@
                              1)
                 :type 'cmna-maximum-iterations-exceeded))
 
+(ert-deftest cmna-secant/finds-known-root ()
+  (let ((root (cmna-secant (lambda (x) (- (* x x) 2))
+                           1 2 1e-10)))
+    (cmna-should-float= root (sqrt 2) 1e-10)))
+
+(ert-deftest cmna-secant/returns-initial-root ()
+  (let ((function (lambda (x) (- x 2))))
+    (should (= (cmna-secant function 2 3) 2.0))
+    (should (= (cmna-secant function 1 2) 2.0))))
+
+(ert-deftest cmna-secant/validates-function ()
+  (should-error (cmna-secant "not-a-function" 0 1)
+                :type 'wrong-type-argument))
+
+(ert-deftest cmna-secant/validates-initial-estimates ()
+  (should-error (cmna-secant #'identity "0" 1)
+                :type 'wrong-type-argument)
+  (should-error (cmna-secant #'identity 0 "1")
+                :type 'wrong-type-argument)
+  (should-error (cmna-secant #'identity 1.0e+INF 1)
+                :type 'wrong-type-argument)
+  (should-error (cmna-secant #'identity 0 1.0e+INF)
+                :type 'wrong-type-argument)
+  (should-error (cmna-secant #'identity 1 1)
+                :type 'cmna-domain-error))
+
+(ert-deftest cmna-secant/validates-tolerance ()
+  (should-error (cmna-secant #'identity 0 1 0)
+                :type 'cmna-domain-error)
+  (should-error (cmna-secant #'identity 0 1 -1e-6)
+                :type 'cmna-domain-error)
+  (should-error (cmna-secant #'identity 0 1 1.0e+INF)
+                :type 'cmna-domain-error))
+
+(ert-deftest cmna-secant/validates-max-iterations ()
+  (should-error (cmna-secant #'identity 0 1 nil 0)
+                :type 'cmna-domain-error)
+  (should-error (cmna-secant #'identity 0 1 nil 1.5)
+                :type 'cmna-domain-error))
+
+(ert-deftest cmna-secant/rejects-nonfinite-initial-function-values ()
+  (should-error (cmna-secant (lambda (_x) 0.0e+NaN) 0 1)
+                :type 'cmna-domain-error)
+  (should-error
+   (cmna-secant (lambda (x) (if (zerop x) -1 1.0e+INF)) 0 1)
+   :type 'cmna-domain-error))
+
+(ert-deftest cmna-secant/rejects-nonfinite-iterated-function-value ()
+  (should-error
+   (cmna-secant
+    (lambda (x)
+      (cond
+       ((= x 0.0) -2.0)
+       ((= x 1.0) -1.0)
+       (t 0.0e+NaN)))
+    0 1)
+   :type 'cmna-domain-error))
+
+(ert-deftest cmna-secant/rejects-zero-denominator ()
+  (should-error
+   (cmna-secant (lambda (x) (+ (* x x) 1)) -1 1)
+   :type 'cmna-domain-error))
+
+(ert-deftest cmna-secant/rejects-nonfinite-denominator ()
+  (should-error
+   (cmna-secant
+    (lambda (x) (if (< x 0) -1.0e+308 1.0e+308))
+    -1 1)
+   :type 'cmna-domain-error))
+
+(ert-deftest cmna-secant/rejects-nonfinite-next-estimate ()
+  (should-error
+   (cmna-secant (lambda (x) (/ x 1.0e+308))
+                -1.0e+308 1.0e+308)
+   :type 'cmna-domain-error))
+
+(ert-deftest cmna-secant/detects-floating-point-stagnation ()
+  (should-error
+   (cmna-secant
+    (lambda (x) (if (zerop x) 1.0e+308 1.0))
+    0 1)
+   :type 'cmna-domain-error))
+
+(ert-deftest cmna-secant/errors-on-iteration-exhaustion ()
+  (should-error
+   (cmna-secant (lambda (x) (- (* x x) 2))
+                1 2 1e-15 1)
+   :type 'cmna-maximum-iterations-exceeded))
+
 (provide 'cmna-rootfinding-test)
 
 ;;; cmna-rootfinding-test.el ends here
