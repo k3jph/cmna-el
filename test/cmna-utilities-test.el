@@ -5,6 +5,33 @@
 (require 'cmna-errors)
 (require 'cmna-utilities)
 
+(ert-deftest cmna--finite-number-p/recognizes-finite-scalars ()
+  (should (cmna--finite-number-p 0))
+  (should (cmna--finite-number-p -3.5))
+  (should-not (cmna--finite-number-p 0.0e+NaN))
+  (should-not (cmna--finite-number-p 1.0e+INF))
+  (should-not (cmna--finite-number-p "1")))
+
+(ert-deftest cmna--validate-tolerance/contract ()
+  (should (= (cmna--validate-tolerance 1e-6) 1e-6))
+  (should-error (cmna--validate-tolerance 0) :type 'cmna-domain-error)
+  (should-error (cmna--validate-tolerance -1) :type 'cmna-domain-error)
+  (should-error (cmna--validate-tolerance 1.0e+INF)
+                :type 'cmna-domain-error))
+
+(ert-deftest cmna--validate-maximum-iterations/contract ()
+  (should (= (cmna--validate-maximum-iterations 10) 10))
+  (should-error (cmna--validate-maximum-iterations 0)
+                :type 'cmna-domain-error)
+  (should-error (cmna--validate-maximum-iterations 1.5)
+                :type 'cmna-domain-error))
+
+(ert-deftest cmna--ensure-finite-number/signals-numerical-condition ()
+  (should-error (cmna--ensure-finite-number 0.0e+NaN "value")
+                :type 'cmna-non-finite-value)
+  (should-error (cmna--ensure-finite-number 1.0e+INF "value")
+                :type 'cmna-numerical-error))
+
 (ert-deftest cmna-float-equal-p/equal ()
   (should (cmna-float-equal-p 1.0 1.0))
   (should (cmna-float-equal-p 1.000000001 1.000000002))

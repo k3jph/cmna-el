@@ -53,9 +53,9 @@
 
 (ert-deftest cmna-bisection/rejects-nonfinite-function-values ()
   (should-error (cmna-bisection (lambda (_x) 0.0e+NaN) 0 1)
-                :type 'cmna-domain-error)
+                :type 'cmna-non-finite-value)
   (should-error (cmna-bisection (lambda (_x) 1.0e+INF) 0 1)
-                :type 'cmna-domain-error))
+                :type 'cmna-numerical-error))
 
 (ert-deftest cmna-bisection/rejects-nonfinite-midpoint-value ()
   (should-error
@@ -66,13 +66,17 @@
        ((< x 0.5) -1)
        (t 1)))
     0 1)
-   :type 'cmna-domain-error))
+   :type 'cmna-non-finite-value))
 
 (ert-deftest cmna-bisection/errors-on-iteration-exhaustion ()
   (should-error
    (cmna-bisection (lambda (x) (- (* x x) 2))
                    1 2 1e-15 1)
-   :type 'cmna-maximum-iterations-exceeded))
+   :type 'cmna-maximum-iterations-exceeded)
+  (should-error
+   (cmna-bisection (lambda (x) (- (* x x) 2))
+                   1 2 1e-15 1)
+   :type 'cmna-convergence-error))
 
 (ert-deftest cmna-bisection/detects-midpoint-collapse ()
   (let* ((a 1.0)
@@ -82,7 +86,7 @@
       (lambda (x)
         (if (= x a) -1 1))
       a b 1e-18)
-     :type 'cmna-domain-error)))
+     :type 'cmna-stagnation)))
 
 (ert-deftest cmna-newton/finds-known-root ()
   (let ((root (cmna-newton (lambda (x) (- (* x x) 2))
@@ -125,23 +129,33 @@
   (should-error (cmna-newton (lambda (_x) 0.0e+NaN)
                              (lambda (_x) 1)
                              1)
-                :type 'cmna-domain-error)
+                :type 'cmna-non-finite-value)
   (should-error (cmna-newton (lambda (x) (- x 1))
                              (lambda (_x) 1.0e+INF)
                              0)
-                :type 'cmna-domain-error))
+                :type 'cmna-non-finite-value))
 
 (ert-deftest cmna-newton/rejects-zero-derivative ()
   (should-error (cmna-newton (lambda (x) (+ (* x x) 1))
                              (lambda (_x) 0)
                              1)
-                :type 'cmna-domain-error))
+                :type 'cmna-zero-derivative)
+  (should-error (cmna-newton (lambda (x) (+ (* x x) 1))
+                             (lambda (_x) 0)
+                             1)
+                :type 'cmna-numerical-error))
 
 (ert-deftest cmna-newton/rejects-nonfinite-next-estimate ()
   (should-error (cmna-newton (lambda (_x) 1.0e+308)
                              (lambda (_x) 1.0e-308)
                              0)
-                :type 'cmna-domain-error))
+                :type 'cmna-non-finite-value))
+
+(ert-deftest cmna-newton/detects-floating-point-stagnation ()
+  (should-error (cmna-newton (lambda (_x) 1.0)
+                             (lambda (_x) 1.0e+308)
+                             1.0)
+                :type 'cmna-stagnation))
 
 (ert-deftest cmna-newton/errors-on-iteration-exhaustion ()
   (should-error (cmna-newton (lambda (x) (- (* x x) 2))
@@ -193,10 +207,10 @@
 
 (ert-deftest cmna-secant/rejects-nonfinite-initial-function-values ()
   (should-error (cmna-secant (lambda (_x) 0.0e+NaN) 0 1)
-                :type 'cmna-domain-error)
+                :type 'cmna-non-finite-value)
   (should-error
    (cmna-secant (lambda (x) (if (zerop x) -1 1.0e+INF)) 0 1)
-   :type 'cmna-domain-error))
+   :type 'cmna-non-finite-value))
 
 (ert-deftest cmna-secant/rejects-nonfinite-iterated-function-value ()
   (should-error
@@ -207,38 +221,60 @@
        ((= x 1.0) -1.0)
        (t 0.0e+NaN)))
     0 1)
-   :type 'cmna-domain-error))
+   :type 'cmna-non-finite-value))
 
 (ert-deftest cmna-secant/rejects-zero-denominator ()
   (should-error
    (cmna-secant (lambda (x) (+ (* x x) 1)) -1 1)
-   :type 'cmna-domain-error))
+   :type 'cmna-zero-denominator)
+  (should-error
+   (cmna-secant (lambda (x) (+ (* x x) 1)) -1 1)
+   :type 'cmna-numerical-error))
 
 (ert-deftest cmna-secant/rejects-nonfinite-denominator ()
   (should-error
    (cmna-secant
     (lambda (x) (if (< x 0) -1.0e+308 1.0e+308))
     -1 1)
-   :type 'cmna-domain-error))
+   :type 'cmna-non-finite-value))
 
 (ert-deftest cmna-secant/rejects-nonfinite-next-estimate ()
   (should-error
    (cmna-secant (lambda (x) (/ x 1.0e+308))
                 -1.0e+308 1.0e+308)
-   :type 'cmna-domain-error))
+   :type 'cmna-non-finite-value))
 
 (ert-deftest cmna-secant/detects-floating-point-stagnation ()
   (should-error
    (cmna-secant
     (lambda (x) (if (zerop x) 1.0e+308 1.0))
     0 1)
-   :type 'cmna-domain-error))
+   :type 'cmna-stagnation)
+  (should-error
+   (cmna-secant
+    (lambda (x) (if (zerop x) 1.0e+308 1.0))
+    0 1)
+   :type 'cmna-convergence-error))
 
 (ert-deftest cmna-secant/errors-on-iteration-exhaustion ()
   (should-error
    (cmna-secant (lambda (x) (- (* x x) 2))
                 1 2 1e-15 1)
    :type 'cmna-maximum-iterations-exceeded))
+
+(ert-deftest cmna-rootfinding/canonical-methods-agree ()
+  (let* ((function (lambda (x) (- (* x x) 2)))
+         (bisection-root (cmna-bisection function 1 2 1e-10))
+         (newton-root (cmna-newton function
+                                   (lambda (x) (* 2 x))
+                                   1
+                                   1e-10))
+         (secant-root (cmna-secant function 1 2 1e-10)))
+    (cmna-should-float= bisection-root (sqrt 2) 1e-10)
+    (cmna-should-float= newton-root (sqrt 2) 1e-10)
+    (cmna-should-float= secant-root (sqrt 2) 1e-10)
+    (cmna-should-float= bisection-root newton-root 1e-9)
+    (cmna-should-float= newton-root secant-root 1e-9)))
 
 (provide 'cmna-rootfinding-test)
 

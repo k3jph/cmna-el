@@ -19,6 +19,53 @@
 (require 'cmna-defaults)
 (require 'cmna-errors)
 
+(defun cmna--finite-number-p (value)
+  "Return non-nil when VALUE is a finite number."
+  (and (numberp value)
+       (= value value)
+       (or (integerp value)
+           (< (abs value) 1.0e+INF))))
+
+(defun cmna--validate-finite-number (value label)
+  "Return VALUE when it is finite, using LABEL in errors."
+  (unless (cmna--finite-number-p value)
+    (signal 'wrong-type-argument (list 'numberp value label)))
+  value)
+
+(defun cmna--validate-tolerance (tolerance)
+  "Return TOLERANCE when it is positive and finite."
+  (unless (and (cmna--finite-number-p tolerance) (> tolerance 0))
+    (signal 'cmna-domain-error
+            '("Tolerance must be a positive finite number")))
+  tolerance)
+
+(defun cmna--validate-maximum-iterations (max-iterations)
+  "Return MAX-ITERATIONS when it is a positive integer."
+  (unless (and (integerp max-iterations) (> max-iterations 0))
+    (signal 'cmna-domain-error
+            '("Maximum iterations must be a positive integer")))
+  max-iterations)
+
+(defun cmna--ensure-finite-number (value label &optional context)
+  "Return VALUE when finite, otherwise signal a CMNA condition.
+
+LABEL identifies the numerical value.  CONTEXT, when non-nil, is appended to
+the condition data for programmatic inspection."
+  (unless (cmna--finite-number-p value)
+    (signal 'cmna-non-finite-value
+            (append (list (format "%s must be a finite number" label)
+                          :label label
+                          :value value)
+                    context)))
+  value)
+
+(defun cmna--checked-function-value (function argument label)
+  "Call FUNCTION with ARGUMENT and require a finite result named LABEL."
+  (cmna--ensure-finite-number
+   (funcall function argument)
+   label
+   (list :argument argument)))
+
 (defun cmna-float-equal-p (x y &optional tolerance)
   "Return non-nil when X and Y differ by no more than TOLERANCE.
 
@@ -26,8 +73,7 @@ TOLERANCE defaults to `cmna-default-tolerance' and must be positive."
   (setq tolerance (or tolerance cmna-default-tolerance))
   (unless (and (numberp x) (numberp y) (numberp tolerance))
     (signal 'wrong-type-argument '(numberp)))
-  (when (<= tolerance 0)
-    (signal 'cmna-domain-error '("Tolerance must be greater than zero")))
+  (cmna--validate-tolerance tolerance)
   (<= (abs (- x y)) tolerance))
 
 (defun cmna-sequence (from to by)
