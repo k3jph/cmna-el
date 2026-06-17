@@ -257,7 +257,7 @@ is exhausted."
                       :method 'cmna-secant
                       :iterations iteration
                       :x0 x0 :x1 x1
-                      :f0 f0 :f1 f1))))))))
+                      :f0 f0 :f1 f1)))))))
 
 (provide 'cmna-rootfinding)
 
