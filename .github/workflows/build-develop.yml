@@ -46,16 +46,4 @@ jobs:
           version: snapshot
 
       - name: Run checks
-        shell: bash
-        run: |
-          set +e
-          make check > "check-${{ matrix.emacs_version }}.log" 2>&1
-          status=$?
-          exit "$status"
-
-      - name: Upload check log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: check-log-${{ matrix.emacs_version }}
-          path: check-${{ matrix.emacs_version }}.log
+        run: make check
