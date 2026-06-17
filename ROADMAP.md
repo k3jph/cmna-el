@@ -64,14 +64,15 @@ As of June 2026, `cmna-el` has moved beyond a monolithic experiment and establis
 - CI covers the supported modern Emacs versions, currently Emacs 28 through 30.
 - `cmna.el` acts as the package entry point, while numerical code is separated into domain modules.
 - Shared defaults, utilities, and condition definitions have been separated from algorithm implementations.
-- The root-finding module contains modern implementations of:
-  - bisection;
-  - Newton's method; and
-  - the secant method.
-- ERT tests cover convergence and important failure modes.
-- Shared test macros now provide consistent approximate floating-point assertions.
+- The root-finding family is complete as the first reference implementation:
+  - `cmna-bisection` validates brackets and termination conditions and distinguishes non-finite evaluations, stagnation, and exhausted iteration budgets;
+  - `cmna-newton` distinguishes zero derivatives, non-finite updates, stagnation, and failed convergence; and
+  - `cmna-secant` distinguishes zero and non-finite denominators, non-finite updates, stagnation, and failed convergence.
+- Shared private validators now define finite-number, tolerance, iteration-limit, and checked-evaluation behavior.
+- The condition hierarchy separates invalid use, numerical breakdown, and convergence failure while preserving the common `cmna-error` parent.
+- Canonical ERT cases and [ROOTFINDING.md](ROOTFINDING.md) record the semantic contract shared with `cmna-pkg` and the differences intentionally retained by each language.
 
-The root-finding work is the first vertical slice of the intended architecture. Other modules contain legacy or partial material and require the same methodical review.
+The completed root-finding family is the first vertical slice of the intended architecture. Other modules contain legacy or partial material and require the same methodical review.
 
 ## Roadmap
 
@@ -94,7 +95,7 @@ Work includes:
 
 **Exit criteria:** a contributor can add a numerical method by following established module, validation, condition, testing, and documentation patterns.
 
-### Phase 1 — Root finding
+### Phase 1 — Root finding — complete
 
 **Goal:** complete and stabilize the reference family for iterative scalar algorithms.
 
@@ -104,16 +105,17 @@ Included methods:
 - `cmna-newton`; and
 - `cmna-secant`.
 
-Remaining family-level work includes:
+Completed family-level work:
 
-- review argument names and optional defaults for consistency;
-- confirm a common distinction among invalid input, numerical breakdown, and failed convergence;
-- ensure every public condition has stable parentage and useful data or messages;
-- complete docstring and README examples;
-- compare canonical cases with the R implementation; and
-- decide whether any optional diagnostic interface is needed before other iterative families copy the current scalar-return pattern.
+- standardized argument validation and optional controls across the three methods;
+- established a common distinction among invalid input, numerical breakdown, and failed convergence;
+- defined stable parentage and structured context for public conditions;
+- moved repeated finite-number, tolerance, iteration-limit, and checked-evaluation behavior into shared utilities;
+- completed docstrings, README examples, and the family contract in [ROOTFINDING.md](ROOTFINDING.md);
+- added canonical comparative tests shared conceptually with the R implementation; and
+- retained scalar return values rather than introducing diagnostic wrappers without a demonstrated need.
 
-**Exit criteria:** all three methods expose coherent contracts, have complete condition tests, and serve as the model for later iterative routines.
+**Exit criteria satisfied:** all three methods expose coherent contracts, have condition-specific and category-level tests, and serve as the model for later iterative routines.
 
 ### Phase 2 — Fundamentals and numerical utilities
 
