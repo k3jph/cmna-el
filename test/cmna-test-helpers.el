@@ -1,4 +1,5 @@
 ;;; cmna-test-helpers.el --- Test helpers for CMNA -*- lexical-binding: t; -*-
+;; SPDX-License-Identifier: BSD-2-Clause
 
 (require 'ert)
 (require 'cmna-defaults)
