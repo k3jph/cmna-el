@@ -1,0 +1,222 @@
+# README.org -*- mode: org; lexical-binding: t; -*-
+#+TITLE: CMNA: Numerical Methods in Emacs Lisp
+#+AUTHOR: James P. Howard, II
+#+EMAIL: jh@jameshoward.us
+#+LANGUAGE: en
+#+OPTIONS: toc:2 num:nil
+
+[[https://github.com/k3jph/cmna-el][file:https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white]]
+[[https://jameshoward.us][file:https://img.shields.io/badge/homepage-jameshoward.us-0b2f5b.svg?style=for-the-badge&labelColor=f3dd78]]
+
+[[https://github.com/k3jph/cmna-el/actions/workflows/build-develop.yml][file:https://github.com/k3jph/cmna-el/actions/workflows/build-develop.yml/badge.svg?branch=develop]]
+[[https://www.gnu.org/software/emacs/][file:https://img.shields.io/badge/Emacs-28.2%2B-7F5AB6.svg?logo=gnuemacs&logoColor=white]]
+[[https://github.com/k3jph/cmna-el][file:https://img.shields.io/badge/version-0.1.0-blue.svg]]
+[[https://github.com/k3jph/cmna-el/tree/develop][file:https://img.shields.io/badge/status-active%20development-orange.svg]]
+
+CMNA provides computational methods for numerical analysis in Emacs Lisp.  It
+includes fundamental numerical helpers, root-finding algorithms, and numerical
+integration routines in a small package that can be used interactively, from
+other Emacs Lisp programs, or for teaching and experimentation.
+
+The package currently targets Emacs 28.2 and later.  CMNA is under active
+modernization: the fundamentals, utilities, and root-finding interfaces use the
+~cmna-~ namespace and consistent validation, while the integration routines
+retain their original names until that portion of the package is modernized.
+
+* Installation
+
+CMNA is currently installed from source.  Clone the repository and add its
+location to your Emacs ~load-path~:
+
+#+BEGIN_SRC sh
+git clone https://github.com/k3jph/cmna-el.git
+#+END_SRC
+
+Then add the following to your Emacs configuration, replacing the example path
+with the location of the clone:
+
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'load-path "/path/to/cmna-el")
+(require 'cmna)
+#+END_SRC
+
+For current development work, check out the ~develop~ branch:
+
+#+BEGIN_SRC sh
+git switch develop
+#+END_SRC
+
+* Quick Start
+
+** Fundamental operations
+
+#+BEGIN_SRC emacs-lisp
+(cmna-sum '(1 2 3 4))
+;; => 10
+
+(cmna-arithmetic-mean '(1 2 3 4))
+;; => 2.5
+
+(cmna-sequence 0 1 0.25)
+;; => (0 0.25 0.5 0.75 1.0)
+#+END_SRC
+
+** Root finding
+
+Find the positive root of \(x^2 - 2 = 0\) by bisection:
+
+#+BEGIN_SRC emacs-lisp
+(cmna-bisection
+ (lambda (x) (- (* x x) 2))
+ 1 2)
+;; => approximately 1.414213562
+#+END_SRC
+
+Use Newton's method when the derivative is available:
+
+#+BEGIN_SRC emacs-lisp
+(cmna-newton
+ (lambda (x) (- (* x x) 2))
+ (lambda (x) (* 2 x))
+ 1)
+;; => approximately 1.414213562
+#+END_SRC
+
+Use the secant method when two initial estimates are available but an explicit
+derivative is not:
+
+#+BEGIN_SRC emacs-lisp
+(cmna-secant
+ (lambda (x) (- (* x x) 2))
+ 1 2)
+;; => approximately 1.414213562
+#+END_SRC
+
+** Numerical integration
+
+Approximate \(\int_0^1 x^2\,dx\) with the midpoint rule:
+
+#+BEGIN_SRC emacs-lisp
+(midpoint-rule
+ (lambda (x) (* x x))
+ 0 1 100)
+;; => approximately 0.333325
+#+END_SRC
+
+The integration functions currently retain their original, unnamespaced API.
+Their names and validation behavior may change before CMNA reaches version 1.0.
+
+* Public API
+
+** Fundamentals
+
+- ~cmna-sum NUMBERS~ — return the sum of a list of numbers.
+- ~cmna-arithmetic-mean NUMBERS~ — return the arithmetic mean of a non-empty
+  list of numbers.
+
+** Utilities
+
+- ~cmna-float-equal-p X Y &optional TOLERANCE~ — test whether two numbers differ
+  by no more than a tolerance.
+- ~cmna-sequence FROM TO BY~ — construct an inclusive numeric sequence.
+
+** Root finding
+
+- ~cmna-bisection FUNCTION A B &optional TOLERANCE MAX-ITERATIONS~ — find a root
+  bracketed by two endpoints.
+- ~cmna-newton FUNCTION DERIVATIVE GUESS &optional TOLERANCE MAX-ITERATIONS~ —
+  find a root by Newton iteration.
+- ~cmna-secant FUNCTION X0 X1 &optional TOLERANCE MAX-ITERATIONS~ — find a root
+  by secant iteration.
+
+The root-finding functions validate their inputs and intermediate values.  They
+signal ~cmna-domain-error~ for invalid numerical conditions and
+~cmna-maximum-iterations-exceeded~ when the requested iteration budget is
+exhausted.
+
+** Integration
+
+These functions are available but have not yet received the modernized CMNA
+interface:
+
+- ~midpoint-rule FUNC A B N~
+- ~trapezoid-rule FUNC A B N~
+- ~simpsons-rule FUNC A B N~
+
+* Configuration
+
+CMNA provides two user options in the ~cmna~ customization group:
+
+- ~cmna-default-tolerance~ — default numerical tolerance, initially ~1e-9~.
+- ~cmna-default-maximum-iterations~ — default iteration limit, initially ~1000~.
+
+They may be changed with Emacs Customize or in Lisp:
+
+#+BEGIN_SRC emacs-lisp
+(setq cmna-default-tolerance 1e-12
+      cmna-default-maximum-iterations 2000)
+#+END_SRC
+
+Explicit function arguments take precedence over these defaults.
+
+* Project Status
+
+CMNA 0.1.0 is an early development release.  The current modernization effort
+is establishing a consistent public namespace, validation model, error model,
+test suite, and build process before expanding the collection of numerical
+methods.
+
+The modernized portions currently include:
+
+- fundamental operations;
+- shared numerical utilities;
+- bisection;
+- Newton's method; and
+- the secant method.
+
+The integration module remains functional but is the next major legacy area to
+be brought into the same conventions.
+
+* Development
+
+CMNA uses [[https://emacs-eask.github.io/][Eask]] for dependency management,
+byte-compilation, testing, and packaging.  Install Eask and GNU Make, then run:
+
+#+BEGIN_SRC sh
+make install
+#+END_SRC
+
+Run the ERT test suite with:
+
+#+BEGIN_SRC sh
+make test
+#+END_SRC
+
+Run byte-compilation and the complete test suite with:
+
+#+BEGIN_SRC sh
+make check
+#+END_SRC
+
+Build a package archive in ~dist/~ with:
+
+#+BEGIN_SRC sh
+make package
+#+END_SRC
+
+Continuous integration runs ~make check~ on Emacs 28.2, 29.4, and 30.1.
+
+Development follows a Git Flow-style branch structure.  Feature branches are
+created from ~develop~ and pull requests target ~develop~.  The ~main~ branch is
+reserved for release-ready work.
+
+* Related Project
+
+The R implementation of Computational Methods for Numerical Analysis is
+maintained separately in [[https://github.com/k3jph/cmna-pkg][cmna-pkg]].  The two
+projects share a numerical-methods focus but are not guaranteed to expose
+identical APIs.
+
+* Version
+
+This README describes CMNA 0.1.0 on the ~develop~ branch.
