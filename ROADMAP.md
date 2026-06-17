@@ -71,6 +71,11 @@ As of June 2026, `cmna-el` has moved beyond a monolithic experiment and establis
 - Shared private validators now define finite-number, tolerance, iteration-limit, and checked-evaluation behavior.
 - The condition hierarchy separates invalid use, numerical breakdown, and convergence failure while preserving the common `cmna-error` parent.
 - Canonical ERT cases and [ROOTFINDING.md](ROOTFINDING.md) record the semantic contract shared with `cmna-pkg` and the differences intentionally retained by each language.
+- Phase 2 has begun with the summation family:
+  - `cmna-sum` remains the historical left-to-right summation function;
+  - `cmna-naive-sum` makes the left-to-right baseline explicit; and
+  - `cmna-kahan-sum` implements compensated Kahan summation.
+- [SUMMATION.md](SUMMATION.md) records the summation contract shared conceptually with `cmna-pkg`.
 
 The completed root-finding family is the first vertical slice of the intended architecture. Other modules contain legacy or partial material and require the same methodical review.
 
@@ -117,14 +122,19 @@ Completed family-level work:
 
 **Exit criteria satisfied:** all three methods expose coherent contracts, have condition-specific and category-level tests, and serve as the model for later iterative routines.
 
-### Phase 2 — Fundamentals and numerical utilities
+### Phase 2 — Fundamentals and numerical utilities — in progress
 
 **Goal:** establish the small numerical building blocks and examples used throughout the library.
 
-Likely scope includes:
+The first completed slice is summation:
+
+- left-to-right summation through `cmna-sum` and `cmna-naive-sum`;
+- Kahan compensated summation through `cmna-kahan-sum`; and
+- canonical semantic comparison with `cmna-pkg` through [SUMMATION.md](SUMMATION.md) and ERT tests.
+
+Remaining likely scope includes:
 
 - polynomial evaluation, including naive and Horner forms;
-- naive and compensated summation;
 - roots and quadratic formulas;
 - sequence and sample functions;
 - finite-number and approximate-comparison utilities; and
