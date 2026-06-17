@@ -93,6 +93,9 @@ derivative is not:
 ;; => approximately 1.414213562
 #+END_SRC
 
+The mathematical and failure contract shared with the R implementation is
+documented in [[file:ROOTFINDING.md][ROOTFINDING.md]].
+
 ** Numerical integration
 
 Approximate \(\int_0^1 x^2\,dx\) with the midpoint rule:
@@ -130,10 +133,13 @@ Their names and validation behavior may change before CMNA reaches version 1.0.
 - ~cmna-secant FUNCTION X0 X1 &optional TOLERANCE MAX-ITERATIONS~ — find a root
   by secant iteration.
 
-The root-finding functions validate their inputs and intermediate values.  They
-signal ~cmna-domain-error~ for invalid numerical conditions and
-~cmna-maximum-iterations-exceeded~ when the requested iteration budget is
-exhausted.
+The root-finding functions validate their inputs and intermediate values.
+Invalid numerical preconditions use ~cmna-domain-error~.  Numerical breakdowns
+use conditions below ~cmna-numerical-error~, including
+~cmna-non-finite-value~, ~cmna-zero-derivative~, and
+~cmna-zero-denominator~.  Failed convergence uses conditions below
+~cmna-convergence-error~, including ~cmna-stagnation~ and
+~cmna-maximum-iterations-exceeded~.
 
 ** Integration
 
@@ -167,13 +173,14 @@ is establishing a consistent public namespace, validation model, error model,
 test suite, and build process before expanding the collection of numerical
 methods.
 
-The modernized portions currently include:
+The completed reference family now includes:
 
-- fundamental operations;
-- shared numerical utilities;
 - bisection;
 - Newton's method; and
-- the secant method.
+- the secant method;
+- shared numerical validation helpers;
+- specific numerical-breakdown and convergence conditions; and
+- canonical semantic comparison with ~cmna-pkg~.
 
 The integration module remains functional but is the next major legacy area to
 be brought into the same conventions.
@@ -215,8 +222,8 @@ reserved for release-ready work.
 
 The R implementation of Computational Methods for Numerical Analysis is
 maintained separately in [[https://github.com/k3jph/cmna-pkg][cmna-pkg]].  The two
-projects share a numerical-methods focus but are not guaranteed to expose
-identical APIs.
+projects share mathematical semantics where methods overlap, while retaining
+language-native interfaces and condition systems.
 
 * License
 
