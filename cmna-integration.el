@@ -19,7 +19,7 @@
 
 (defun midpoint-rule (func a b n)
   "Calculates the integral of FUNC from A to B using N intervals with the
-midpoint rule.
+  midpoint rule.
 
   Parameters:
     FUNC: The function to integrate.
@@ -46,7 +46,7 @@ midpoint rule.
 
 (defun trapezoid-rule (func a b n)
   "Calculates the integral of FUNC from A to B using N intervals with the
-trapezoid rule.
+  trapezoid rule.
 
   Parameters:
     FUNC: The function to integrate.
@@ -77,7 +77,7 @@ trapezoid rule.
 
 (defun simpsons-rule(func a b n)
   "Calculates the integral of FUNC from A to B using N intervals with the
-Simpson's rule.
+  Simpson's rule.
 
   Parameters:
     FUNC: The function to integrate.
