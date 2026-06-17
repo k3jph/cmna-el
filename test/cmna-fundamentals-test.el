@@ -1,4 +1,5 @@
 ;;; cmna-fundamentals-test.el --- Tests for CMNA fundamentals -*- lexical-binding: t; -*-
+;; SPDX-License-Identifier: BSD-2-Clause
 
 (require 'ert)
 (require 'cmna-errors)
