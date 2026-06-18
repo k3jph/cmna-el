@@ -20,6 +20,7 @@
 
 (require 'cmna-errors)
 (require 'cmna-fundamentals)
+(require 'cmna-polynomials)
 (require 'cmna-utilities)
 
 (require 'cmna-integration)
