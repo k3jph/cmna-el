@@ -12,7 +12,7 @@
 ;;
 ;;; Commentary:
 ;;
-;; Polynomial evaluation and real quadratic-root algorithms for CMNA.
+;; Polynomial evaluation, real quadratic roots, and real nth roots for CMNA.
 ;;
 ;;; Code:
 
@@ -106,6 +106,74 @@ second uses the product-of-roots identity when possible.  Signal
         (if (<= root1 root2)
             (list root1 root2)
           (list root2 root1))))))
+
+(defun cmna-nth-root (radicand degree &optional tolerance max-iterations)
+  "Return the real DEGREE-th root of RADICAND by Newton iteration.
+
+DEGREE must be a positive integer.  Negative RADICAND values are accepted only
+when DEGREE is odd.  TOLERANCE and MAX-ITERATIONS default to the package-wide
+CMNA settings.  Signal CMNA numerical or convergence conditions for non-finite
+intermediate values, stagnation, and exhausted iteration limits."
+  (setq tolerance (or tolerance cmna-default-tolerance)
+        max-iterations (or max-iterations cmna-default-maximum-iterations))
+  (cmna--validate-finite-number radicand "radicand")
+  (unless (and (integerp degree) (> degree 0))
+    (signal 'cmna-domain-error
+            (list "Degree must be a positive integer" :degree degree)))
+  (cmna--validate-tolerance tolerance)
+  (cmna--validate-maximum-iterations max-iterations)
+  (when (and (< radicand 0) (zerop (% degree 2)))
+    (signal 'cmna-domain-error
+            (list "Negative radicands require an odd degree"
+                  :radicand radicand :degree degree)))
+  (cond
+   ((zerop radicand) 0)
+   ((= degree 1) radicand)
+   (t
+    (let* ((sign-result (if (< radicand 0) -1.0 1.0))
+           (target (abs (float radicand)))
+           (estimate (if (>= target 1.0) (/ target degree) 1.0))
+           (scale (max 1.0 target))
+           (iteration 0)
+           next-estimate
+           residual)
+      (catch 'converged
+        (while (< iteration max-iterations)
+          (setq iteration (1+ iteration))
+          (let ((denominator
+                 (cmna--ensure-finite-number
+                  (expt estimate (1- degree))
+                  "nth-root denominator"
+                  (list :iteration iteration :estimate estimate))))
+            (when (zerop denominator)
+              (signal 'cmna-zero-denominator
+                      (list "Nth-root iteration encountered a zero denominator"
+                            :iteration iteration :estimate estimate)))
+            (setq next-estimate
+                  (cmna--ensure-finite-number
+                   (/ (+ (* (1- degree) estimate)
+                         (/ target denominator))
+                      degree)
+                   "nth-root estimate"
+                   (list :iteration iteration))))
+          (setq residual
+                (cmna--ensure-finite-number
+                 (abs (- (expt next-estimate degree) target))
+                 "nth-root residual"
+                 (list :iteration iteration :estimate next-estimate)))
+          (when (<= residual (* tolerance scale))
+            (throw 'converged (* sign-result next-estimate)))
+          (when (= next-estimate estimate)
+            (signal 'cmna-stagnation
+                    (list "Nth-root iteration stagnated before convergence"
+                          :iteration iteration
+                          :estimate estimate
+                          :residual residual)))
+          (setq estimate next-estimate))
+        (signal 'cmna-maximum-iterations-exceeded
+                (list "Nth-root iteration exceeded maximum iterations"
+                      :iterations max-iterations
+                      :estimate (* sign-result estimate))))))))
 
 (provide 'cmna-polynomials)
 
