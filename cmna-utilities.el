@@ -77,27 +77,38 @@ TOLERANCE defaults to `cmna-default-tolerance' and must be positive."
   (<= (abs (- x y)) tolerance))
 
 (defun cmna-sequence (from to by)
-  "Return a numeric sequence from FROM toward TO in increments of BY.
+  "Return a finite numeric sequence from FROM toward TO in steps of BY.
 
-The endpoint is included when reached exactly.  Signal `cmna-domain-error'
-when BY is zero or points away from TO."
-  (unless (and (numberp from) (numberp to) (numberp by))
-    (signal 'wrong-type-argument '(numberp)))
-  (when (= by 0)
+FROM, TO, and BY must be finite numbers.  BY must be nonzero and point toward
+TO.  The endpoint is included when reached, allowing for ordinary
+floating-point roundoff.  When BY does not divide the interval evenly, the
+sequence stops before crossing TO.  Equal endpoints return a one-element list."
+  (cmna--validate-finite-number from "from")
+  (cmna--validate-finite-number to "to")
+  (cmna--validate-finite-number by "by")
+  (when (zerop by)
     (signal 'cmna-domain-error '("Increment must be nonzero")))
   (when (or (and (< from to) (< by 0))
             (and (> from to) (> by 0)))
     (signal 'cmna-domain-error '("Increment points away from endpoint")))
-  (let ((value from)
-        result)
-    (if (> by 0)
-        (while (<= value to)
+  (if (= from to)
+      (list from)
+    (let* ((roundoff (* 8.0 2.220446049250313e-16
+                        (max 1.0 (abs from) (abs to) (abs by))))
+           (value from)
+           result)
+      (if (> by 0)
+          (while (<= value (+ to roundoff))
+            (when (<= (abs (- value to)) roundoff)
+              (setq value to))
+            (push value result)
+            (setq value (+ value by)))
+        (while (>= value (- to roundoff))
+          (when (<= (abs (- value to)) roundoff)
+            (setq value to))
           (push value result)
-          (setq value (+ value by)))
-      (while (>= value to)
-        (push value result)
-        (setq value (+ value by))))
-    (nreverse result)))
+          (setq value (+ value by))))
+      (nreverse result))))
 
 (provide 'cmna-utilities)
 
