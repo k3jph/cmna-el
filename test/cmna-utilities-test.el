@@ -67,16 +67,30 @@
         (expected '(0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0)))
     (should (= (length result) (length expected)))
     (cl-mapc (lambda (actual wanted)
-               (should (cmna-float-equal-p actual wanted 1e-6)))
-             result expected)))
+               (should (cmna-float-equal-p actual wanted 1e-12)))
+             result expected)
+    (should (= (car (last result)) 1.0))))
+
+(ert-deftest cmna-sequence/equal-endpoints ()
+  (should (equal (cmna-sequence 2 2 1) '(2)))
+  (should (equal (cmna-sequence 2 2 -1) '(2))))
 
 (ert-deftest cmna-sequence/domain-error ()
   (should-error (cmna-sequence 1 5 -1) :type 'cmna-domain-error)
   (should-error (cmna-sequence 5 1 1) :type 'cmna-domain-error)
   (should-error (cmna-sequence 1 1 0) :type 'cmna-domain-error))
 
+(ert-deftest cmna-sequence/rejects-non-finite-inputs ()
+  (should-error (cmna-sequence 1.0e+INF 5 1)
+                :type 'wrong-type-argument)
+  (should-error (cmna-sequence 1 0.0e+NaN 1)
+                :type 'wrong-type-argument)
+  (should-error (cmna-sequence 1 5 1.0e+INF)
+                :type 'wrong-type-argument))
+
 (ert-deftest cmna-sequence/uneven-division ()
-  (should (equal (cmna-sequence 0 5 3) '(0 3))))
+  (should (equal (cmna-sequence 0 5 3) '(0 3)))
+  (should (equal (cmna-sequence 5 0 -3) '(5 2))))
 
 (provide 'cmna-utilities-test)
 
