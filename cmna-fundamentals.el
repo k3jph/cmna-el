@@ -71,6 +71,24 @@ Signal `cmna-domain-error' when NUMBERS is empty."
     (signal 'cmna-domain-error '("Cannot calculate the mean of an empty list")))
   (/ (float (cmna-sum numbers)) (length numbers)))
 
+(defun cmna-fibonacci (n)
+  "Return the exact N-th Fibonacci number.
+
+Use zero-based indexing: F(0) = 0 and F(1) = 1.  N must be a nonnegative
+integer.  The implementation is iterative and returns an exact integer using
+Emacs Lisp bignums when necessary."
+  (unless (and (integerp n) (>= n 0))
+    (signal 'cmna-domain-error
+            (list "N must be a nonnegative integer" :n n)))
+  (if (zerop n)
+      0
+    (let ((previous 0)
+          (current 1))
+      (dotimes (_ (1- n) current)
+        (let ((next (+ previous current)))
+          (setq previous current
+                current next))))))
+
 (provide 'cmna-fundamentals)
 
 ;;; cmna-fundamentals.el ends here
