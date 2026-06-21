@@ -93,6 +93,20 @@
   (should-error (cmna-arithmetic-mean '(1 2 "3"))
                 :type 'wrong-type-argument))
 
+(ert-deftest cmna-fibonacci/zero-based-indexing ()
+  (should (= (cmna-fibonacci 0) 0))
+  (should (= (cmna-fibonacci 1) 1))
+  (should (= (cmna-fibonacci 2) 1))
+  (should (= (cmna-fibonacci 10) 55)))
+
+(ert-deftest cmna-fibonacci/uses-exact-bignums ()
+  (should (= (cmna-fibonacci 100) 354224848179261915075)))
+
+(ert-deftest cmna-fibonacci/rejects-invalid-indices ()
+  (should-error (cmna-fibonacci -1) :type 'cmna-domain-error)
+  (should-error (cmna-fibonacci 1.5) :type 'cmna-domain-error)
+  (should-error (cmna-fibonacci "10") :type 'cmna-domain-error))
+
 (provide 'cmna-fundamentals-test)
 
 ;;; cmna-fundamentals-test.el ends here
